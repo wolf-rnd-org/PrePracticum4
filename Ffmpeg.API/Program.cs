@@ -1,4 +1,5 @@
 using Ffmpeg.Command;
+using FFmpeg.API.Endpoints;
 using FFmpeg.Core.Interfaces;
 using FFmpeg.Infrastructure.Services;
 using Microsoft.AspNetCore.Http.Features;
@@ -8,7 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddControllers();
+//builder.Services.AddControllers();
+builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -52,30 +54,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
-app.MapControllers();
-
-// Ensure FFmpeg directories exist
-EnsureFFmpegDirectories(app.Configuration);
+//app.MapControllers();
+app.MapEndpoints();
 
 app.MapGet("/", () => { return "FFmpeg API is running"; });
 app.Run();
 
-void EnsureFFmpegDirectories(IConfiguration configuration)
-{
-    try
-    {
-        var basePath = Environment.ExpandEnvironmentVariables(configuration["FFmpeg:Path"] ?? string.Empty);
-
-        if (!string.IsNullOrEmpty(basePath))
-        {
-            Directory.CreateDirectory(Path.Combine(basePath, "Input"));
-            Directory.CreateDirectory(Path.Combine(basePath, "Output"));
-            Directory.CreateDirectory(Path.Combine(basePath, "Temp"));
-        }
-    }
-    catch (Exception ex)
-    {
-        var logger = app.Services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Error creating FFmpeg directories");
-    }
-}

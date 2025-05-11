@@ -7,16 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="FFmpegProcessing\**" />
+    <Content Remove="FFmpegProcessing\**" />
+    <EmbeddedResource Remove="FFmpegProcessing\**" />
+    <None Remove="FFmpegProcessing\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FFmpeg.Core\FFmpeg.Core.csproj" />
     <ProjectReference Include="..\FFmpeg.Infrastructure\FFmpeg.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="FFmpegProcessing\" />
   </ItemGroup>
 
 </Project>

@@ -22,22 +22,22 @@ namespace Ffmpeg.Command.Commands
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
         }
 
-        public async Task<CommandResult> ExecuteAsync(WatermarkModel request)
+        public async Task<CommandResult> ExecuteAsync(WatermarkModel model)
         {
             CommandBuilder = _commandBuilder
-                .SetInput(request.InputFile)
-                .SetInput(request.WatermarkFile)
-                .SetOverlay(request.XPosition, request.YPosition)
+                .SetInput(model.InputFile)
+                .SetInput(model.WatermarkFile)
+                .SetOverlay(model.XPosition, model.YPosition)
                 .AddOption($"-map 0:a?")
                 .AddOption($"-c:a copy");
 
-            if (request.IsVideo)
+            if (model.IsVideo)
             {
                 CommandBuilder
-                    .SetVideoCodec(request.VideoCodec);
+                    .SetVideoCodec(model.VideoCodec);
             }
 
-            CommandBuilder.SetOutput(request.OutputFile, request.IsVideo ? false : true);
+            CommandBuilder.SetOutput(model.OutputFile, model.IsVideo ? false : true);
 
             return await RunAsync();
         }

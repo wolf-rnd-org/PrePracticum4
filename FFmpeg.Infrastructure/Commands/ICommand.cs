@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace Ffmpeg.Command.Commands
 {
-    public interface ICommand<TRequest>
+    public interface ICommand<TModel>
     {
-        Task<CommandResult> ExecuteAsync(TRequest request);
+        Task<CommandResult> ExecuteAsync(TModel request);
     }
 }
