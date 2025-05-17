@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="ffmpeg\ffmpeg.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Update="External\ffmpeg.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
