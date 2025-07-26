@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Core.Models
 {
-    internal class ColorFilterModel
+    public class ColorFilterModel
     {
+        public string InputFile { get; set; }
+        public string OutputFile { get; set; }
+        public bool IsVideo { get; set; }
+        public string VideoCodec { get; set; } = "libx264";
     }
 }
