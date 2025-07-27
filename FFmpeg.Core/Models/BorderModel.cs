@@ -11,7 +11,7 @@ namespace FFmpeg.Core.Models
         public string InputFile { get; set; }
         public string OutputFile { get; set; }
         public string BorderColor { get; set; } = "black";
-        public int BorderThickness { get; set; } = 20; // ברירת מחדל – מסגרת של 20px מכל צד
+        public int BorderThickness { get; set; } = 20; 
         public string VideoCodec { get; set; } = "libx264";
     }
 }
