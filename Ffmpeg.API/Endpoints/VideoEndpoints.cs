@@ -22,8 +22,8 @@ namespace FFmpeg.API.Endpoints
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
 
             app.MapPost("/api/video/change-speed", ChangeVideoSpeed)
-             .DisableAntiforgery()
-             .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100MB
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100MB
         }
 
         private static async Task<IResult> AddWatermark(
