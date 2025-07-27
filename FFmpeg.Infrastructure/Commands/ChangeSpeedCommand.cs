@@ -53,9 +53,7 @@ namespace FFmpeg.Infrastructure.Commands
             {
                 CommandBuilder.SetVideoCodec(model.VideoCodec);
             }
-
             CommandBuilder.SetOutput(model.OutputFile, model.IsVideo ? false : true);
-
             return await RunAsync();
         }
     }
