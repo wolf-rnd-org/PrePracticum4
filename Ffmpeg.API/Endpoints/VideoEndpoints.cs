@@ -20,7 +20,7 @@ namespace FFmpeg.API.Endpoints
             int MaxUploadSize = 104857600;
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); 
 
             app.MapPost("/api/video/compress", CompressVideo)
                 .DisableAntiforgery()
@@ -28,7 +28,7 @@ namespace FFmpeg.API.Endpoints
 
             app.MapPost("/api/video/change-speed", ChangeVideoSpeed)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100MB
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); 
         }
 
         private static async Task<IResult> AddWatermark(
