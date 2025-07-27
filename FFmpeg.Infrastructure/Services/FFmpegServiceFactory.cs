@@ -1,5 +1,6 @@
 ﻿using Ffmpeg.Command;
 using Ffmpeg.Command.Commands;
+using FFmpeg.Core.Interfaces;
 using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Commands;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +15,7 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+        ICommandRunner CreateMixAudioCommand(string input1, string input2, string output);
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -36,5 +38,11 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
+        // using FFmpeg.Infrastructure.Commands;
+        public ICommandRunner CreateMixAudioCommand(string input1, string input2, string output)
+        {
+            return new MixAudioCommand(input1, input2, output);
+        }
+
     }
 }
