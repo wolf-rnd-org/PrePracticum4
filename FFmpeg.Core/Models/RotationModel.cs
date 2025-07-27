@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Core.Models
 {
-    class RotationModel
+    public class RotationModel
     {
+        public string InputFile { get; set; }
+        public int Angle { get; set; }
+        public string OutputFile { get; set; }
     }
 }

@@ -20,6 +20,10 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+
+            app.MapPost("/api/video/rotation", AddRotation)
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
         }
 
         private static async Task<IResult> AddWatermark(
@@ -95,5 +99,77 @@ namespace FFmpeg.API.Endpoints
             }
 
         }
+
+
+        private static async Task<IResult> AddRotation(
+        HttpContext context,
+        [FromForm] RotationDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>(); // or a specific logger type
+
+            try
+            {
+                // Validate request
+                if (dto.InputFile == null || dto.Angle == 0)
+                {
+                    return Results.BadRequest("Video file and rotation angle are required");
+                }
+
+                // Save uploaded video file
+                string videoFileName = await fileService.SaveUploadedFileAsync(dto.InputFile);
+
+
+                // Generate output filename
+                string extension = Path.GetExtension(dto.InputFile.FileName);
+                string outputFileName = await fileService.GenerateUniqueFileNameAsync(extension);
+
+                // Track files to clean up
+                List<string> filesToCleanup = new List<string> { videoFileName, outputFileName };
+
+                try
+                {
+                    // Create and execute the rotate command
+                    var command = ffmpegService.CreateRotationCommand();
+                    var result = await command.ExecuteAsync(new RotationModel
+                    {
+                        InputFile = videoFileName,
+                        Angle = dto.Angle,
+                        OutputFile = outputFileName
+                    });
+
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {CommandExecuted}",
+                            result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to rotate video: " + result.ErrorMessage, statusCode: 500);
+                    }
+
+                    // Read the output file
+                    byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+
+                    // Clean up temporary files
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                    // Return the file
+                    return Results.File(fileBytes, "video/mp4", dto.InputFile.FileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error processing rotate request");
+                    // Clean up on error
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in RotateVideo endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+
+        }
+
     }
 }
