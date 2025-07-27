@@ -13,6 +13,7 @@ namespace FFmpeg.Infrastructure.Services
 {
     public interface IFFmpegServiceFactory
     {
+        object CreateBorderCommand();
         ICommand<WatermarkModel> CreateWatermarkCommand();
     }
 
@@ -35,6 +36,11 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
+        }
+        public ICommand<BorderModel> CreateBorderCommand()
+        {
+            return new BorderCommand(_executor, _commandBuilder);
+
         }
     }
 }
