@@ -1,6 +1,6 @@
 ﻿namespace FFmpeg.API.DTOs
 {
-    public class VideoSpeedChangeDto
+    public  VideoSpeedChangeDto
     {
             public IFormFile VideoFile { get; set; }
 
