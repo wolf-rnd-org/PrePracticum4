@@ -17,14 +17,18 @@ namespace FFmpeg.API.Endpoints
     {
         public static void MapEndpoints(this WebApplication app)
         {
+            const int MaxUploadSize = 209715200;
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
 
-            // Merge Videos endpoint
-            app.MapPost("/api/video/merge", MergeVideos)
+            app.MapPost("/api/video/change-speed", ChangeVideoSpeed)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(209715200)); // 200 MB for two videos
+                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100MB
+            app.MapPost("/api/video/merge", MergeVideos)
+                    .DisableAntiforgery()
+                    .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 200 MB for two videos
+
         }
 
         private static async Task<IResult> AddWatermark(
@@ -100,11 +104,53 @@ namespace FFmpeg.API.Endpoints
             }
 
         }
+        private static async Task<IResult> ChangeVideoSpeed(
+          HttpContext context,
+          [FromForm] VideoSpeedChangeDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
 
-        // MergeVideos method
+            try
+            {
+                if (dto.VideoFile == null || dto.Speed <= 0)
+                {
+                    return Results.BadRequest("Video file is required and speed factor must be positive");
+                }
+
+                string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+                string outputFileName = await fileService.GenerateUniqueFileNameAsync(".mp4");
+
+                var command = ffmpegService.CreateVideoSpeedChangeCommand();
+                var result = await command.ExecuteAsync(new ChangeSpeedModel
+                {
+                    InputFile = videoFileName,
+                    Speed = dto.Speed,
+                    OutputFile = outputFileName
+                });
+
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("FFmpeg command failed: {ErrorMessage}", result.ErrorMessage);
+                    return Results.Problem("Failed to change video speed: " + result.ErrorMessage, statusCode: 500);
+                }
+
+                byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+
+                _ = fileService.CleanupTempFilesAsync(new List<string> { videoFileName, outputFileName });
+
+                return Results.File(fileBytes, "video/mp4", dto.OutputFileName ?? dto.VideoFile.FileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error processing change speed request");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
         private static async Task<IResult> MergeVideos(
-            HttpContext context,
-            [FromForm] MergeVideosDto dto)
+        HttpContext context,
+        [FromForm] MergeVideosDto dto)
         {
             var fileService = context.RequestServices.GetRequiredService<IFileService>();
             var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
@@ -144,8 +190,8 @@ namespace FFmpeg.API.Endpoints
                     if (!result.IsSuccess)
                     {
                         logger.LogError("FFmpeg merge command failed: {ErrorMessage}, Command: {Command}",
-                            result.ErrorMessage, result.CommandExecuted);
-                        return Results.Problem("Failed to merge videos: " + result.ErrorMessage, statusCode: 500);
+                            result.Message, result.Output);
+                        return Results.Problem("Failed to merge videos: " + result.Message, statusCode: 500);
                     }
 
                     // Read the output file
@@ -171,5 +217,7 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
+
+
     }
 }

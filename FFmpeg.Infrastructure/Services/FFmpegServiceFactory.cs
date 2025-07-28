@@ -14,7 +14,11 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+<<<<<<< HEAD
         ICommand<MergeVideosModel> CreateMergeVideosCommand();
+=======
+        ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
+>>>>>>> c0293682b95b5f55feb084d63ef3fff3d646f75f
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -37,10 +41,17 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
+<<<<<<< HEAD
         // MergeVideos
         public ICommand<MergeVideosModel> CreateMergeVideosCommand()
         {
             return new MergeVideosCommand(_executor, _commandBuilder);
+=======
+
+        public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
+        {
+            return new ChangeSpeedCommand(_executor, _commandBuilder);
+>>>>>>> c0293682b95b5f55feb084d63ef3fff3d646f75f
         }
     }
 }
