@@ -15,15 +15,18 @@ namespace FFmpeg.API.Endpoints
 {
     public static class VideoEndpoints
     {
+        const int MaxUploadSize = 104857600;
         public static void MapEndpoints(this WebApplication app)
         {
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
 
             app.MapPost("/api/video/rotation", AddRotation)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
 
         private static async Task<IResult> AddWatermark(
@@ -168,8 +171,6 @@ namespace FFmpeg.API.Endpoints
                 logger.LogError(ex, "Error in RotateVideo endpoint");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
-
         }
-
     }
 }

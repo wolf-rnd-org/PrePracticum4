@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
 namespace FFmpeg.Infrastructure.Commands
 {
     public class RotationCommand : BaseCommand, ICommand<RotationModel>
@@ -30,7 +29,6 @@ namespace FFmpeg.Infrastructure.Commands
             CommandBuilder.SetOutput(rotationModel.OutputFile, false);
 
             return await RunAsync();
-
         }
     }
 }
