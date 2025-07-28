@@ -30,7 +30,6 @@ namespace FFmpeg.Infrastructure.Commands
             CommandBuilder.SetOutput(rotationModel.OutputFile, false);
 
             return await RunAsync();
-
         }
     }
 }
