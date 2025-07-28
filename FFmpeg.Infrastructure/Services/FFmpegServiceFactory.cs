@@ -14,6 +14,8 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+
+        ICommand<CropModel> CreateCropCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -35,6 +37,11 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<CropModel> CreateCropCommand()
+        {
+            return new CropCommand(_executor, _commandBuilder);
         }
     }
 }
