@@ -22,11 +22,17 @@ namespace FFmpeg.API.Endpoints
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
 
+<<<<<<< HEAD
             // ----------- AUDIO ENDPOINT -----------
             app.MapPost("/api/audio/convert", ConvertAudio)
                 .DisableAntiforgery()
                 .WithName("ConvertAudio")
                 .Accepts<ConvertAudioDto>("multipart/form-data");
+=======
+            app.MapPost("/api/video/change-speed", ChangeVideoSpeed)
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100MB
+>>>>>>> c0293682b95b5f55feb084d63ef3fff3d646f75f
         }
 
         // ---------- VIDEO ----------
@@ -143,6 +149,54 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("Unexpected error: " + ex.Message);
             }
         }
+
+        private static async Task<IResult> ChangeVideoSpeed(
+          HttpContext context,
+          [FromForm] VideoSpeedChangeDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.VideoFile == null || dto.Speed <= 0)
+                {
+                    return Results.BadRequest("Video file is required and speed factor must be positive");
+                }
+
+                string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+                string outputFileName = await fileService.GenerateUniqueFileNameAsync(".mp4");
+
+                var command = ffmpegService.CreateVideoSpeedChangeCommand();
+                var result = await command.ExecuteAsync(new ChangeSpeedModel
+                {
+                    InputFile = videoFileName,
+                    Speed = dto.Speed,
+                    OutputFile = outputFileName
+                });
+
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("FFmpeg command failed: {ErrorMessage}", result.ErrorMessage);
+                    return Results.Problem("Failed to change video speed: " + result.ErrorMessage, statusCode: 500);
+                }
+
+                byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+
+                _ = fileService.CleanupTempFilesAsync(new List<string> { videoFileName, outputFileName });
+
+                return Results.File(fileBytes, "video/mp4", dto.OutputFileName ?? dto.VideoFile.FileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error processing change speed request");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
     }
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> c0293682b95b5f55feb084d63ef3fff3d646f75f
