@@ -20,11 +20,16 @@ namespace FFmpeg.API.Endpoints
         {
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
 
             app.MapPost("/api/video/rotation", AddRotation)
                 .DisableAntiforgery()
+<<<<<<< HEAD
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); 
+=======
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+>>>>>>> a5848e890857c5b8fc8a72ffdeb8746c2d1f94fb
 
             app.MapPost("/api/video/change-speed", ChangeVideoSpeed)
                 .DisableAntiforgery()
@@ -106,7 +111,10 @@ namespace FFmpeg.API.Endpoints
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> a5848e890857c5b8fc8a72ffdeb8746c2d1f94fb
         private static async Task<IResult> AddRotation(
         HttpContext context,
         [FromForm] RotationDto dto)
@@ -172,12 +180,17 @@ namespace FFmpeg.API.Endpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error in RotateVideo endpoint");
-                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+                              return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
+<<<<<<< HEAD
 
         }
 
 =======
+=======
+}
+      
+>>>>>>> a5848e890857c5b8fc8a72ffdeb8746c2d1f94fb
         private static async Task<IResult> ChangeVideoSpeed(
           HttpContext context,
           [FromForm] VideoSpeedChangeDto dto)
@@ -222,6 +235,9 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
+<<<<<<< HEAD
 >>>>>>> c0293682b95b5f55feb084d63ef3fff3d646f75f
+=======
+>>>>>>> a5848e890857c5b8fc8a72ffdeb8746c2d1f94fb
     }
 }
