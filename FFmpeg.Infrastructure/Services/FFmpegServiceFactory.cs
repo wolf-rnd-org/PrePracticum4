@@ -14,6 +14,7 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+        ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -35,6 +36,11 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
+        {
+            return new ChangeSpeedCommand(_executor, _commandBuilder);
         }
     }
 }
