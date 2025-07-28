@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Core.Models
 {
-    class VideoCompreesinModel
+    public class VideoCompressionModel
     {
+        public required string InputFile { get; set; }
+        public required string OutputFile { get; set; }
     }
 }
