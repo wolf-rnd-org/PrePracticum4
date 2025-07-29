@@ -16,6 +16,7 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<GreenScreenModel> CreateGreenScreenCommand();
 
+        ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -37,6 +38,11 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
+        {
+            return new ChangeSpeedCommand(_executor, _commandBuilder);
         }
 
         public ICommand<GreenScreenModel> CreateGreenScreenCommand()
