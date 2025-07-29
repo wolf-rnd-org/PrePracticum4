@@ -21,12 +21,20 @@ namespace FFmpeg.API.Endpoints
 
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
+
                 .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+
+            
+
+
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
 
             app.MapPost("/api/video/change-speed", ChangeVideoSpeed)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100MB
-    
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+            app.MapPost("/api/video/create-thumbnail", CreateThumbnail)
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
 
         }
 
@@ -213,6 +221,69 @@ namespace FFmpeg.API.Endpoints
             {
                 logger.LogError(ex, "Error processing change speed request");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+
+
+        private static async Task<IResult> CreateThumbnail(
+            HttpContext context,
+            [FromForm] CreateThumbnailDTO dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.VideoName == null || string.IsNullOrWhiteSpace(dto.ImageName))
+                {
+                    return Results.BadRequest("Video file and image name are required.");
+                }
+
+                if (!TimeSpan.TryParse(dto.Time, out var timestamp))
+                {
+                    return Results.BadRequest("Invalid time format. Use HH:mm:ss");
+                }
+
+                string inputFileName = await fileService.SaveUploadedFileAsync(dto.VideoName);
+
+                string outputImageName = dto.ImageName.EndsWith(".jpg") ? dto.ImageName : dto.ImageName + ".jpg";
+
+                List<string> filesToCleanup = new() { inputFileName, outputImageName };
+
+                try
+                {
+                    var command = ffmpegService.CreateThumbnailCommand();
+                    var result = await command.ExecuteAsync(new CreateThumbnailModel
+                    {
+                        VideoName = inputFileName,
+                        ImageName = outputImageName,
+                        Timestamp = timestamp
+                    });
+
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg failed: {ErrorMessage}, Command: {Command}",
+                            result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to create thumbnail: " + result.ErrorMessage, statusCode: 500);
+                    }
+
+                    byte[] imageBytes = await fileService.GetOutputFileAsync(outputImageName);
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                    return Results.File(imageBytes, "image/jpeg", outputImageName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error during thumbnail generation");
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    return Results.Problem("Internal error during thumbnail creation", statusCode: 500);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Unexpected error in CreateThumbnail");
+                return Results.Problem("Unexpected error: " + ex.Message, statusCode: 500);
             }
         }
 

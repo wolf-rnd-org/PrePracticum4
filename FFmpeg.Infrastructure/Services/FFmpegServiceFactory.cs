@@ -16,7 +16,11 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
 
+
         ICommand<CreatePreviewModel> CreatePreviewCommand();
+
+        ICommand<CreateThumbnailModel> CreateThumbnailCommand();
+
         ICommand<CropModel> CreateCropCommand();
         ICommandRunner CreateMixAudioCommand(string input1, string input2, string output);
     }
@@ -53,9 +57,9 @@ namespace FFmpeg.Infrastructure.Services
         }
 
 
-        public ICommand<CreatePreviewModel> CreatePreviewCommand()
+        public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
         {
-            return new CreatePreviewCommand(_executor, _commandBuilder);
+            return new CreateThumbnailCommand(_executor, _commandBuilder);
         }
         public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
         {
