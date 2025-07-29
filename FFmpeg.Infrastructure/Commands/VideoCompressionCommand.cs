@@ -20,8 +20,10 @@ namespace FFmpeg.Infrastructure.Commands
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
         }
 
+
        
         public async Task<CommandResult> ExecuteAsync(VideoCompressionModel request)
+
         {
             CommandBuilder = _commandBuilder
             .SetInput(request.InputFile)
