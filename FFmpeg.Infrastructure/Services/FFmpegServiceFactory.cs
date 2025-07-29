@@ -15,6 +15,8 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<GreenScreenModel> CreateGreenScreenCommand();
+        ICommand<CreatePreviewModel> CreatePreviewCommand();
+        ICommand<CropModel> CreateCropCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
     }
 
@@ -34,14 +36,23 @@ namespace FFmpeg.Infrastructure.Services
             _commandBuilder = new CommandBuilder(configuration);
         }
 
+        public ICommand<CropModel> CreateCropCommand()
+        {
+            throw new NotImplementedException();
+        }
+
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
 
+        public ICommand<CreatePreviewModel> CreatePreviewCommand()
+        {
+            return new CreatePreviewCommand(_executor, _commandBuilder);
+        }
         public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
         {
-            return new ChangeSpeedCommand(_executor, _commandBuilder);
+            throw new NotImplementedException();
         }
 
         public ICommand<GreenScreenModel> CreateGreenScreenCommand()
