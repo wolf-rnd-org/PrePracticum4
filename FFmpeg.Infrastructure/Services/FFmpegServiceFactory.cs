@@ -15,7 +15,6 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<GreenScreenModel> CreateGreenScreenCommand();
-
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
     }
 
