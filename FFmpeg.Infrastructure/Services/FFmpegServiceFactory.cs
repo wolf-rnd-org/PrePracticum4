@@ -14,6 +14,11 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+        ICommand<ConvertAudioModel> CreateConvertAudioCommand();
+
+        ICommand<CreateThumbnailModel> CreateThumbnailCommand();
+        ICommand<CropModel> CreateCropCommand();
+        ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -32,9 +37,27 @@ namespace FFmpeg.Infrastructure.Services
             _commandBuilder = new CommandBuilder(configuration);
         }
 
+        public ICommand<CropModel> CreateCropCommand()
+        {
+            throw new NotImplementedException();
+        }
+
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
+        }
+        public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
+        {
+            return new ConvertAudioCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
+        {
+            return new CreateThumbnailCommand(_executor, _commandBuilder);
+        }
+        public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
+        {
+            throw new NotImplementedException();
         }
     }
 }
