@@ -20,6 +20,9 @@ namespace FFmpeg.Infrastructure.Commands
         ICommandBuilder SetAudioCodec(string codec);
         ICommandBuilder SetFrameRate(int frameRate);
         ICommandBuilder SetScale(int width, int height);
+        ICommandBuilder SetStartTime(string startTime);
+        ICommandBuilder SetEndTime(string endTime);
+        ICommandBuilder SetCopyCodec();
         string Build();
     }
 }

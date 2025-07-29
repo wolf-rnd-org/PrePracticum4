@@ -15,6 +15,7 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<ColorFilterModel> CreateColorFilterCommand();
+        ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
         ICommand<CreateThumbnailModel> CreateThumbnailCommand();
         ICommand<CropModel> CreateCropCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
@@ -50,6 +51,12 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new ColorFilterCommand(_executor, _commandBuilder);
         }
+
+        public ICommand<VideoCuttingModel> CreateVideoCuttingCommand()
+        {
+            return new VideoCuttingCommand(_executor, _commandBuilder);
+        }
+
         public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
         {
             return new CreateThumbnailCommand(_executor, _commandBuilder);
@@ -61,10 +68,13 @@ namespace FFmpeg.Infrastructure.Services
 
         public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
         {
-            throw new NotImplementedException();
+            return new ConvertAudioCommand(_executor, _commandBuilder);
         }
+
+  
+
+
     }
 }
-
 
 
