@@ -1,59 +1,58 @@
-﻿using Ffmpeg.Command.Commands;
-using Ffmpeg.Command;
+﻿using Ffmpeg.Command;
+using Ffmpeg.Command.Commands;
 using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Commands;
-using FFmpeg.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public interface IFFmpegServiceFactory
+namespace FFmpeg.Infrastructure.Services
 {
-    ICommand<WatermarkModel> CreateWatermarkCommand();
-    ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand();
-    ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
-    ICommand<CreatePreviewModel> CreatePreviewCommand();
-    ICommand<CropModel> CreateCropCommand();
-}
-
-public class FFmpegServiceFactory : IFFmpegServiceFactory
-{
-    private readonly FFmpegExecutor _executor;
-    private readonly ICommandBuilder _commandBuilder;
-
-    public FFmpegServiceFactory(IConfiguration configuration, ILogger logger = null)
+    public interface IFFmpegServiceFactory
     {
-        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        string ffmpegPath = Path.Combine(baseDirectory, "external", "ffmpeg.exe");
-
-        bool logOutput = bool.TryParse(configuration["FFmpeg:LogOutput"], out bool log) && log;
-
-        _executor = new FFmpegExecutor(ffmpegPath, logOutput, logger);
-        _commandBuilder = new CommandBuilder(configuration);
+        ICommand<WatermarkModel> CreateWatermarkCommand();
+        ICommand<CreateThumbnailModel> CreateThumbnailCommand();
+        ICommand<CropModel> CreateCropCommand();
+        ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
+        ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand();     
     }
-
-    public ICommand<WatermarkModel> CreateWatermarkCommand()
+    public class FFmpegServiceFactory : IFFmpegServiceFactory
     {
-        return new WatermarkCommand(_executor, _commandBuilder);
-    }
+        private readonly FFmpegExecutor _executor;
+        private readonly ICommandBuilder _commandBuilder;
 
-    public ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand()
-    {
-        return new VideoCompressionCommand(_executor, _commandBuilder);
-    }
+        public FFmpegServiceFactory(IConfiguration configuration, ILogger logger = null)
+        {
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string ffmpegPath = Path.Combine(baseDirectory, "external", "ffmpeg.exe");
 
-    public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
-    {
-        return new ChangeSpeedCommand(_executor, _commandBuilder);
-    }
+            bool logOutput = bool.TryParse(configuration["FFmpeg:LogOutput"], out bool log) && log;
 
-    public ICommand<CreatePreviewModel> CreatePreviewCommand()
-    {
-        return new CreatePreviewCommand(_executor, _commandBuilder);
-    }
-
-    public ICommand<CropModel> CreateCropCommand()
-    {
-        throw new NotImplementedException();
+            _executor = new FFmpegExecutor(ffmpegPath, logOutput, logger);
+            _commandBuilder = new CommandBuilder(configuration);
+        }
+        public ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand()
+        {
+            return new VideoCompressionCommand(_executor, _commandBuilder);
+        }
+        public ICommand<CropModel> CreateCropCommand()
+        {
+            throw new NotImplementedException();
+        }
+        public ICommand<WatermarkModel> CreateWatermarkCommand()
+        {
+            return new WatermarkCommand(_executor, _commandBuilder);
+        }
+        public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
+        {
+            return new CreateThumbnailCommand(_executor, _commandBuilder);
+        }
+        public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
+        {
+            throw new NotImplementedException();
+        }        
     }
 }

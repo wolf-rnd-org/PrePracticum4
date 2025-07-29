@@ -17,13 +17,9 @@ namespace FFmpeg.API.Endpoints
     {
         public static void MapEndpoints(this WebApplication app)
         {
-            const int MaxUploadSize = 104857600; 
+            const int MaxUploadSize = 104857600;
 
             app.MapPost("/api/video/watermark", AddWatermark)
-                .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
-
-            app.MapPost("/api/video/compress", CompressVideo)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
 
@@ -31,10 +27,19 @@ namespace FFmpeg.API.Endpoints
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
 
-            app.MapPost("/api/video/crop", AddCrop) 
+            app.MapPost("/api/video/crop", AddCrop)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+
+            app.MapPost("/api/video/create-thumbnail", CreateThumbnail)
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+
+            app.MapPost("/api/video/compress", CompressVideo)
+              .DisableAntiforgery()
+              .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
+
 
         private static async Task<IResult> AddWatermark(
             HttpContext context,
@@ -89,97 +94,6 @@ namespace FFmpeg.API.Endpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error in AddWatermark endpoint");
-                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
-            }
-        }
-        private static async Task<IResult> CompressVideo(
-            HttpContext context,
-            [FromForm] VideoCompreesionDto dto)
-        {
-            var fileService = context.RequestServices.GetRequiredService<IFileService>();
-            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
-            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-
-            try
-            {
-                if (dto.VideoFile == null)
-                    return Results.BadRequest("Video file is required");
-
-                string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
-                string extension = Path.GetExtension(dto.VideoFile.FileName);
-                string outputFileName = await fileService.GenerateUniqueFileNameAsync(extension);
-                List<string> filesToCleanup = new() { videoFileName, outputFileName };
-
-                try
-                {
-                    var command = ffmpegService.ChangeVideoCompressionCommand();
-                    var result = await command.ExecuteAsync(new VideoCompreesinModel
-                    {
-                        InputFile = videoFileName,
-                        OutputFile = outputFileName,
-                    });
-
-                    if (!result.IsSuccess)
-                    {
-                        logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {Command}", result.ErrorMessage, result.CommandExecuted);
-                        return Results.Problem("Failed to compress video: " + result.ErrorMessage, statusCode: 500);
-                    }
-
-                    byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
-                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
-                    return Results.File(fileBytes, "video/mp4", dto.VideoFile.FileName);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "Error processing compress video request");
-                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
-                    throw;
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error in CompressVideo endpoint");
-                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
-            }
-        }
-        private static async Task<IResult> ChangeVideoSpeed(
-            HttpContext context,
-            [FromForm] VideoSpeedChangeDto dto)
-        {
-            var fileService = context.RequestServices.GetRequiredService<IFileService>();
-            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
-            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-
-            try
-            {
-                if (dto.VideoFile == null || dto.Speed <= 0)
-                    return Results.BadRequest("Video file is required and speed factor must be positive");
-
-                string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
-                string outputFileName = await fileService.GenerateUniqueFileNameAsync(".mp4");
-
-                var command = ffmpegService.CreateVideoSpeedChangeCommand();
-                var result = await command.ExecuteAsync(new ChangeSpeedModel
-                {
-                    InputFile = videoFileName,
-                    Speed = dto.Speed,
-                    OutputFile = outputFileName
-                });
-
-                if (!result.IsSuccess)
-                {
-                    logger.LogError("FFmpeg command failed: {ErrorMessage}", result.ErrorMessage);
-                    return Results.Problem("Failed to change video speed: " + result.ErrorMessage, statusCode: 500);
-                }
-
-                byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
-                _ = fileService.CleanupTempFilesAsync(new List<string> { videoFileName, outputFileName });
-
-                return Results.File(fileBytes, "video/mp4", dto.OutputFileName ?? dto.VideoFile.FileName);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error processing change speed request");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
@@ -238,6 +152,167 @@ namespace FFmpeg.API.Endpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error in AddCrop endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+        private static async Task<IResult> ChangeVideoSpeed(
+            HttpContext context,
+            [FromForm] VideoSpeedChangeDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.VideoFile == null || dto.Speed <= 0)
+                {
+                    return Results.BadRequest("Video file is required and speed factor must be positive");
+                }
+
+                string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+                string outputFileName = await fileService.GenerateUniqueFileNameAsync(".mp4");
+
+                var command = ffmpegService.CreateVideoSpeedChangeCommand();
+                if (command == null)
+                {
+                    logger.LogError("Failed to create FFmpeg command for changing video speed.");
+                    return Results.Problem("Internal server error: Unable to process the request.", statusCode: 500);
+                }
+
+                var result = await command.ExecuteAsync(new ChangeSpeedModel
+                {
+                    InputFile = videoFileName,
+                    Speed = dto.Speed,
+                    OutputFile = outputFileName
+                });
+
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("FFmpeg command failed: {ErrorMessage}", result.ErrorMessage);
+                    return Results.Problem("Failed to change video speed: " + result.ErrorMessage, statusCode: 500);
+                }
+
+                byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+
+                _ = fileService.CleanupTempFilesAsync(new List<string> { videoFileName, outputFileName });
+
+                return Results.File(fileBytes, "video/mp4", dto.OutputFileName ?? dto.VideoFile.FileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error processing change speed request");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+        private static async Task<IResult> CreateThumbnail(
+            HttpContext context,
+            [FromForm] CreateThumbnailDTO dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.VideoName == null || string.IsNullOrWhiteSpace(dto.ImageName))
+                {
+                    return Results.BadRequest("Video file and image name are required.");
+                }
+
+                if (!TimeSpan.TryParse(dto.Time, out var timestamp))
+                {
+                    return Results.BadRequest("Invalid time format. Use HH:mm:ss");
+                }
+
+                string inputFileName = await fileService.SaveUploadedFileAsync(dto.VideoName);
+
+                string outputImageName = dto.ImageName.EndsWith(".jpg") ? dto.ImageName : dto.ImageName + ".jpg";
+
+                List<string> filesToCleanup = new() { inputFileName, outputImageName };
+
+                try
+                {
+                    var command = ffmpegService.CreateThumbnailCommand();
+                    var result = await command.ExecuteAsync(new CreateThumbnailModel
+                    {
+                        VideoName = inputFileName,
+                        ImageName = outputImageName,
+                        Timestamp = timestamp
+                    });
+
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg failed: {ErrorMessage}, Command: {Command}",
+                            result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to create thumbnail: " + result.ErrorMessage, statusCode: 500);
+                    }
+
+                    byte[] imageBytes = await fileService.GetOutputFileAsync(outputImageName);
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                    return Results.File(imageBytes, "image/jpeg", outputImageName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error during thumbnail generation");
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    return Results.Problem("Internal error during thumbnail creation", statusCode: 500);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Unexpected error in CreateThumbnail");
+                return Results.Problem("Unexpected error: " + ex.Message, statusCode: 500);
+            }
+        }
+        private static async Task<IResult> CompressVideo(
+            HttpContext context,
+            [FromForm] VideoCompreesionDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.VideoFile == null)
+                    return Results.BadRequest("Video file is required");
+
+                string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+                string extension = Path.GetExtension(dto.VideoFile.FileName);
+                string outputFileName = await fileService.GenerateUniqueFileNameAsync(extension);
+                List<string> filesToCleanup = new() { videoFileName, outputFileName };
+
+                try
+                {
+                    var command = ffmpegService.ChangeVideoCompressionCommand();
+                    var result = await command.ExecuteAsync(new VideoCompreesinModel
+                    {
+                        InputFile = videoFileName,
+                        OutputFile = outputFileName,
+                    });
+
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {Command}", result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to compress video: " + result.ErrorMessage, statusCode: 500);
+                    }
+
+                    byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    return Results.File(fileBytes, "video/mp4", dto.VideoFile.FileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error processing compress video request");
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in CompressVideo endpoint");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
