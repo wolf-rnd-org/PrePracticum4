@@ -1,4 +1,4 @@
-﻿using Ffmpeg.Command;
+using Ffmpeg.Command;
 using Ffmpeg.Command.Commands;
 using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Commands;
@@ -14,11 +14,11 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
-        ICommand<ConvertAudioModel> CreateConvertAudioCommand();
-
+        ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
         ICommand<CreateThumbnailModel> CreateThumbnailCommand();
         ICommand<CropModel> CreateCropCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
+        ICommand<ConvertAudioModel> CreateConvertAudioCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -37,27 +37,35 @@ namespace FFmpeg.Infrastructure.Services
             _commandBuilder = new CommandBuilder(configuration);
         }
 
-        public ICommand<CropModel> CreateCropCommand()
-        {
-            throw new NotImplementedException();
-        }
-
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
-        public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
+
+        public ICommand<VideoCuttingModel> CreateVideoCuttingCommand()
         {
-            return new ConvertAudioCommand(_executor, _commandBuilder);
+            return new VideoCuttingCommand(_executor, _commandBuilder);
         }
 
         public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
         {
             return new CreateThumbnailCommand(_executor, _commandBuilder);
         }
+
+        public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
+        {
+            return new ConvertAudioCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<CropModel> CreateCropCommand()
+        {
+            throw new NotImplementedException();
+        }
+
         public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
         {
             throw new NotImplementedException();
         }
     }
 }
+

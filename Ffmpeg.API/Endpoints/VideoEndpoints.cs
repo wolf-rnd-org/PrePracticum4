@@ -35,6 +35,10 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/create-thumbnail", CreateThumbnail)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+
+            app.MapPost("/api/video/cut", CutVideo)
+               .DisableAntiforgery()
+               .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
         }
 
         // ---------- VIDEO ----------
@@ -322,6 +326,107 @@ namespace FFmpeg.API.Endpoints
             {
                 logger.LogError(ex, "Unexpected error in CreateThumbnail");
                 return Results.Problem("Unexpected error: " + ex.Message, statusCode: 500);
+            }
+        }
+
+        private static async Task<IResult> CutVideo(
+            HttpContext context,
+            [FromForm] VideoCuttingDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                // Validate request
+                if (dto.VideoFile == null)
+                {
+                    return Results.BadRequest("Video file is required");
+                }
+
+                if (string.IsNullOrEmpty(dto.StartTime))
+                {
+                    return Results.BadRequest("Start time is required");
+                }
+
+                if (string.IsNullOrEmpty(dto.EndTime))
+                {
+                    return Results.BadRequest("End time is required");
+                }
+
+                // Save uploaded file
+                string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+
+                // Generate output filename
+                string extension = Path.GetExtension(dto.VideoFile.FileName);
+                string outputFileName;
+
+                if (!string.IsNullOrWhiteSpace(dto.OutputName))
+                {
+                    // Use custom name provided by user
+                    outputFileName = dto.OutputName + extension;
+                }
+                else
+                {
+                    // Use original name with _cut suffix  
+                    outputFileName = await fileService.GenerateUniqueFileNameAsync(extension);
+                }
+
+                // Track files to clean up
+                List<string> filesToCleanup = new List<string> { videoFileName, outputFileName };
+
+                try
+                {
+                    // Create and execute the video cutting command
+                    var command = ffmpegService.CreateVideoCuttingCommand();
+                    var result = await command.ExecuteAsync(new VideoCuttingModel
+                    {
+                        InputFile = videoFileName,
+                        OutputFile = outputFileName,
+                        StartTime = dto.StartTime,
+                        EndTime = dto.EndTime
+                    });
+
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {Command}",
+                            result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to cut video: " + result.ErrorMessage, statusCode: 500);
+                    }
+
+                    // Read the output file
+                    byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+
+                    // Clean up temporary files
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                    // Return the file
+                    string returnFileName;
+                    if (!string.IsNullOrWhiteSpace(dto.OutputName))
+                    {
+                        returnFileName = dto.OutputName + extension;
+                    }
+                    else
+                    {
+                        string originalFileName = Path.GetFileNameWithoutExtension(dto.VideoFile.FileName);
+                        returnFileName = $"{originalFileName}_cut{extension}";
+                    }
+
+                    return Results.File(fileBytes, "video/mp4", returnFileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error processing video cutting request");
+                    // Clean up on error
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in CutVideo endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
     }
