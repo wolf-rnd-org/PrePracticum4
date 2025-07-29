@@ -13,8 +13,8 @@ namespace FFmpeg.Infrastructure.Services
 {
     public interface IFFmpegServiceFactory
     {
-        object CreateBorderCommand();
         ICommand<WatermarkModel> CreateWatermarkCommand();
+        ICommand<BorderModel> CreateBorderCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
