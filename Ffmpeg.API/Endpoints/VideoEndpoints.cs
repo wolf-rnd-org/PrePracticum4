@@ -29,9 +29,7 @@ namespace FFmpeg.API.Endpoints
 
             app.MapPost("/api/video/greenscreen", ApplyGreenScreen)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
-
-
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
         }
 
         private static async Task<IResult> AddWatermark(
@@ -274,7 +272,5 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
-
-
     }
 }

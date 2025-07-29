@@ -59,6 +59,5 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new GreenScreenCommand(_executor, _commandBuilder);
         }
-
     }
 }
