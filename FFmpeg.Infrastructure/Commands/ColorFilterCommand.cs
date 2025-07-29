@@ -9,23 +9,28 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Infrastructure.Commands
 {
-    public class VideoCompressionCommand : BaseCommand, ICommand<VideoCompreesinModel>
+    public class ColorFilterCommand : BaseCommand, ICommand<ColorFilterModel>
     {
         private readonly ICommandBuilder _commandBuilder;
 
-        public VideoCompressionCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
+        public ColorFilterCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
             : base(executor)
         {
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
         }
 
-        public async Task<CommandResult> ExecuteAsync(VideoCompreesinModel model)
+        public async Task<CommandResult> ExecuteAsync(ColorFilterModel model)
         {
             CommandBuilder = _commandBuilder
                 .SetInput(model.InputFile)
-                .SetVideoCodec("libx264")
-                .AddOption("-crf 28") // Lower quality = smaller file
-                .SetOutput(model.OutputFile);
+                .AddOption("-vf \"hue=s=0\"");
+
+            if (model.IsVideo)
+            {
+                CommandBuilder.SetVideoCodec(model.VideoCodec);
+            }
+
+            CommandBuilder.SetOutput(model.OutputFile, !model.IsVideo);
 
             return await RunAsync();
         }

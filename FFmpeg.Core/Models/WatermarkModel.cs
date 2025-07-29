@@ -8,9 +8,9 @@ namespace FFmpeg.Core.Models
 {
     public class WatermarkModel
     {
-        public string InputFile { get; set; }
-        public string WatermarkFile { get; set; }
-        public string OutputFile { get; set; }
+        public required string InputFile { get; set; }
+        public required string WatermarkFile { get; set; }
+        public required string OutputFile { get; set; }
         public int XPosition { get; set; }
         public int YPosition { get; set; }
         public bool IsVideo { get; set; }
