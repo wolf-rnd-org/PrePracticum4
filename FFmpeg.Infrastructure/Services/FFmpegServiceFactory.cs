@@ -15,8 +15,10 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<BorderModel> CreateBorderCommand();
+        ICommand<CropModel> CreateCropCommand();
+        ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
+        ICommand<CreateThumbnailModel> CreateThumbnailCommand();
     }
-
     public class FFmpegServiceFactory : IFFmpegServiceFactory
     {
         private readonly FFmpegExecutor _executor;
@@ -40,7 +42,18 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<BorderModel> CreateBorderCommand()
         {
             return new BorderCommand(_executor, _commandBuilder);
-
+        }
+        public ICommand<CropModel> CreateCropCommand()
+        {
+            return new CropCommand(_executor, _commandBuilder);
+        }
+        public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
+        {
+            return new ChangeSpeedCommand(_executor, _commandBuilder);
+        }
+        public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
+        {
+            return new CreateThumbnailCommand(_executor, _commandBuilder);
         }
     }
 }
