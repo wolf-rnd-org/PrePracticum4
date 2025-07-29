@@ -14,11 +14,11 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
-        ICommand<CreateThumbnailModel> CreateThumbnailCommand();
+        ICommand<BorderModel> CreateBorderCommand();
         ICommand<CropModel> CreateCropCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
+        ICommand<CreateThumbnailModel> CreateThumbnailCommand();
     }
-
     public class FFmpegServiceFactory : IFFmpegServiceFactory
     {
         private readonly FFmpegExecutor _executor;
@@ -35,23 +35,25 @@ namespace FFmpeg.Infrastructure.Services
             _commandBuilder = new CommandBuilder(configuration);
         }
 
-        public ICommand<CropModel> CreateCropCommand()
-        {
-            throw new NotImplementedException();
-        }
-
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
-
-        public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
+        public ICommand<BorderModel> CreateBorderCommand()
         {
-            return new CreateThumbnailCommand(_executor, _commandBuilder);
+            return new BorderCommand(_executor, _commandBuilder);
+        }
+        public ICommand<CropModel> CreateCropCommand()
+        {
+            return new CropCommand(_executor, _commandBuilder);
         }
         public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
         {
-            throw new NotImplementedException();
+            return new ChangeSpeedCommand(_executor, _commandBuilder);
+        }
+        public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
+        {
+            return new CreateThumbnailCommand(_executor, _commandBuilder);
         }
     }
 }
