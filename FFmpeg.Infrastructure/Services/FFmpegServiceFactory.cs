@@ -14,6 +14,7 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+        ICommand<CropModel> CreateCropCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
     }
 
@@ -33,6 +34,11 @@ namespace FFmpeg.Infrastructure.Services
             _commandBuilder = new CommandBuilder(configuration);
         }
 
+        public ICommand<CropModel> CreateCropCommand()
+        {
+            throw new NotImplementedException();
+        }
+
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
@@ -40,7 +46,7 @@ namespace FFmpeg.Infrastructure.Services
 
         public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
         {
-            return new ChangeSpeedCommand(_executor, _commandBuilder);
+            throw new NotImplementedException();
         }
     }
 }
