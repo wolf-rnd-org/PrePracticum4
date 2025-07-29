@@ -17,10 +17,11 @@ namespace FFmpeg.API.Endpoints
     {
         public static void MapEndpoints(this WebApplication app)
         {
-            int MaxUploadSize = 104857600;
+            const int MaxUploadSize = 104857600; 
+
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); 
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
 
             app.MapPost("/api/video/compress", CompressVideo)
                 .DisableAntiforgery()
@@ -28,8 +29,13 @@ namespace FFmpeg.API.Endpoints
 
             app.MapPost("/api/video/change-speed", ChangeVideoSpeed)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); 
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+
+            app.MapPost("/api/video/crop", AddCrop) 
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
+
 
         private static async Task<IResult> AddWatermark(
             HttpContext context,
@@ -177,6 +183,64 @@ namespace FFmpeg.API.Endpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error processing change speed request");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+        // החדש - Crop
+        private static async Task<IResult> AddCrop(
+            HttpContext context,
+            [FromForm] CropDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                // בדיקות בסיסיות על הקלט
+                if (dto.VideoFile == null)
+                    return Results.BadRequest("Video file is required");
+
+                if (string.IsNullOrWhiteSpace(dto.StartTime) || string.IsNullOrWhiteSpace(dto.EndTime))
+                    return Results.BadRequest("StartTime and EndTime are required");
+
+                if (string.IsNullOrWhiteSpace(dto.OutputFileName))
+                    return Results.BadRequest("OutputFileName is required");
+
+                // שמירת קובץ וידאו קלט
+                string inputFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+
+                // שמירת שם קובץ פלט כפי שנשלח (לפי הדרישה שלך)
+                string outputFileName = dto.OutputFileName;
+
+                var model = new CropModel
+                {
+                    InputFile = inputFileName,
+                    StartTime = dto.StartTime,
+                    EndTime = dto.EndTime,
+                    OutputFile = outputFileName
+                };
+
+                var command = ffmpegService.CreateCropCommand();
+                var result = await command.ExecuteAsync(model);
+
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("FFmpeg Crop command failed: {ErrorMessage}, Command: {Command}",
+                        result.ErrorMessage, result.CommandExecuted);
+                    return Results.Problem("Failed to crop video: " + result.ErrorMessage, statusCode: 500);
+                }
+
+                var fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+
+                // ניקוי קבצים זמניים
+                _ = fileService.CleanupTempFilesAsync(new[] { inputFileName, outputFileName });
+
+                return Results.File(fileBytes, "video/mp4", outputFileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in AddCrop endpoint");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }

@@ -4,7 +4,6 @@ using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Commands;
 using FFmpeg.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 
@@ -13,6 +12,8 @@ public interface IFFmpegServiceFactory
     ICommand<WatermarkModel> CreateWatermarkCommand();
     ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand();
     ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
+    ICommand<CreatePreviewModel> CreatePreviewCommand();
+    ICommand<CropModel> CreateCropCommand();
 }
 
 public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -44,5 +45,15 @@ public class FFmpegServiceFactory : IFFmpegServiceFactory
     public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
     {
         return new ChangeSpeedCommand(_executor, _commandBuilder);
+    }
+
+    public ICommand<CreatePreviewModel> CreatePreviewCommand()
+    {
+        return new CreatePreviewCommand(_executor, _commandBuilder);
+    }
+
+    public ICommand<CropModel> CreateCropCommand()
+    {
+        throw new NotImplementedException();
     }
 }

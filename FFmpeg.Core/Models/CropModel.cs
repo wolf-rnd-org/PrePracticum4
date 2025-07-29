@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Core.Models
 {
-    public class VideoCompreesinModel
+    public class CropModel
     {
         public string InputFile { get; set; }
+        public string StartTime { get; set; }
+        public string EndTime { get; set; }
         public string OutputFile { get; set; }
     }
 }
