@@ -17,11 +17,18 @@ namespace FFmpeg.API.Endpoints
     {
         public static void MapEndpoints(this WebApplication app)
         {
+            // ----------- VIDEO ENDPOINT -----------
             const int MaxUploadSize = 104857600;
 
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+
+            // ----------- AUDIO ENDPOINT -----------
+            app.MapPost("/api/audio/convert", ConvertAudio)
+                .DisableAntiforgery()
+                .WithName("ConvertAudio")
+                .Accepts<ConvertAudioDto>("multipart/form-data");
 
             app.MapPost("/api/video/change-speed", ChangeVideoSpeed)
                 .DisableAntiforgery()
@@ -36,8 +43,8 @@ namespace FFmpeg.API.Endpoints
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
 
             app.MapPost("/api/video/compress", CompressVideo)
-              .DisableAntiforgery()
-              .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
         private static async Task<IResult> AddWatermark(
             HttpContext context,
@@ -80,6 +87,7 @@ namespace FFmpeg.API.Endpoints
 
                     byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
                     _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
                     return Results.File(fileBytes, "video/mp4", dto.VideoFile.FileName);
                 }
                 catch (Exception ex)
@@ -95,7 +103,57 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
-        // החדש - Crop
+        // ---------- AUDIO ----------
+        private static async Task<IResult> ConvertAudio(
+            HttpContext context,
+            [FromForm] ConvertAudioDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            if (dto.AudioFile == null || string.IsNullOrEmpty(dto.OutputFileName))
+            {
+                return Results.BadRequest("Audio file and output name are required");
+            }
+
+            string inputFileName = await fileService.SaveUploadedFileAsync(dto.AudioFile);
+            string extension = Path.GetExtension(dto.OutputFileName);
+            if (string.IsNullOrEmpty(extension))
+            {
+                return Results.BadRequest("Output file name must include extension (e.g., .wav)");
+            }
+
+            string outputFileName = dto.OutputFileName;
+            List<string> filesToCleanup = new() { inputFileName, outputFileName };
+
+            try
+            {
+                var command = ffmpegService.CreateConvertAudioCommand();
+                var result = await command.ExecuteAsync(new ConvertAudioModel
+                {
+                    InputFile = inputFileName,
+                    OutputFile = outputFileName
+                });
+
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("Audio conversion failed: {Error}", result.ErrorMessage);
+                    return Results.Problem("Audio conversion failed: " + result.ErrorMessage);
+                }
+
+                byte[] output = await fileService.GetOutputFileAsync(outputFileName);
+                _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                return Results.File(output, "audio/wav", outputFileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error converting audio");
+                _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                return Results.Problem("Unexpected error: " + ex.Message);
+            }
+        }
+        // ---------- VIDEO ----------
         private static async Task<IResult> AddCrop(
             HttpContext context,
             [FromForm] CropDto dto)
@@ -106,7 +164,6 @@ namespace FFmpeg.API.Endpoints
 
             try
             {
-                // בדיקות בסיסיות על הקלט
                 if (dto.VideoFile == null)
                     return Results.BadRequest("Video file is required");
 
@@ -116,10 +173,8 @@ namespace FFmpeg.API.Endpoints
                 if (string.IsNullOrWhiteSpace(dto.OutputFileName))
                     return Results.BadRequest("OutputFileName is required");
 
-                // שמירת קובץ וידאו קלט
                 string inputFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
 
-                // שמירת שם קובץ פלט כפי שנשלח (לפי הדרישה שלך)
                 string outputFileName = dto.OutputFileName;
 
                 var model = new CropModel
@@ -142,7 +197,6 @@ namespace FFmpeg.API.Endpoints
 
                 var fileBytes = await fileService.GetOutputFileAsync(outputFileName);
 
-                // ניקוי קבצים זמניים
                 _ = fileService.CleanupTempFilesAsync(new[] { inputFileName, outputFileName });
 
                 return Results.File(fileBytes, "video/mp4", outputFileName);
