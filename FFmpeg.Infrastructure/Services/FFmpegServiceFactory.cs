@@ -14,7 +14,7 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
-        ICommand<CreatePreviewModel> CreatePreviewCommand();
+        ICommand<CreateThumbnailModel> CreateThumbnailCommand();
         ICommand<CropModel> CreateCropCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
     }
@@ -45,9 +45,9 @@ namespace FFmpeg.Infrastructure.Services
             return new WatermarkCommand(_executor, _commandBuilder);
         }
 
-        public ICommand<CreatePreviewModel> CreatePreviewCommand()
+        public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
         {
-            return new CreatePreviewCommand(_executor, _commandBuilder);
+            return new CreateThumbnailCommand(_executor, _commandBuilder);
         }
         public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
         {

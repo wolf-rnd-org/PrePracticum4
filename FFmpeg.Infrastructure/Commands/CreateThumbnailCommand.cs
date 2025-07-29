@@ -9,26 +9,26 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Infrastructure.Commands
 {
-    public class CreatePreviewCommand : BaseCommand, ICommand<CreatePreviewModel>
+    public class CreateThumbnailCommand : BaseCommand, ICommand<CreateThumbnailModel>
     {
         private readonly ICommandBuilder _commandBuilder;
 
-        public CreatePreviewCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
+        public CreateThumbnailCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
             : base(executor)
         {
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
         }
 
-        public async Task<CommandResult> ExecuteAsync(CreatePreviewModel model)
+        public async Task<CommandResult> ExecuteAsync(CreateThumbnailModel model)
         {
-            if (string.IsNullOrEmpty(model.VideoNmae) || string.IsNullOrEmpty(model.OutputImageName))
+            if (string.IsNullOrEmpty(model.VideoName) || string.IsNullOrEmpty(model.ImageName))
                 throw new ArgumentException("Video name and output image name are required.");
 
             CommandBuilder = _commandBuilder
-                .SetInput(model.VideoNmae)
-                .AddOption($"-ss {model.Time}")
+                .SetInput(model.VideoName)
+                .AddOption($"-ss {model.Timestamp}")
                 .AddOption("-vframes 1")
-                .SetOutput(model.OutputImageName, true);
+                .SetOutput(model.ImageName, true);
 
             return await RunAsync();
         }
