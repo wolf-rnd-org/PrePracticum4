@@ -161,14 +161,14 @@ namespace FFmpeg.API.Endpoints
 
             try
             {
-                if (dto.VideoFile == null)
-                    return Results.BadRequest("Video file is required");
+                if (dto.VideoFile == null || dto.BackgroundFile == null)
+                    return Results.BadRequest("Video file and background file are required");
 
                 string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+                string backgroundFileName = await fileService.SaveUploadedFileAsync(dto.BackgroundFile);
                 string extension = Path.GetExtension(dto.VideoFile.FileName);
                 string outputFileName = await fileService.GenerateUniqueFileNameAsync(extension);
-
-                List<string> filesToCleanup = new() { videoFileName, outputFileName };
+                var filesToCleanup = new List<string> { videoFileName, backgroundFileName, outputFileName };
 
                 try
                 {
@@ -176,19 +176,21 @@ namespace FFmpeg.API.Endpoints
                     var result = await command.ExecuteAsync(new GreenScreenModel
                     {
                         InputFile = videoFileName,
+                        BackgroundFile = backgroundFileName,
                         OutputFile = outputFileName,
-                        ChromaColor = dto.ColorToRemove ?? "0x00FF00"
+                        VideoCodec = "libx264"
                     });
 
                     if (!result.IsSuccess)
                     {
-                        logger.LogError("FFmpeg green screen failed: {ErrorMessage}, Command: {Command}",
+                        logger.LogError("FFmpeg GreenScreen failed: {ErrorMessage}, Command: {Command}",
                             result.ErrorMessage, result.CommandExecuted);
-                        return Results.Problem("Failed to apply green screen: " + result.ErrorMessage, statusCode: 500);
+                        return Results.Problem("Failed to process green screen: " + result.ErrorMessage, statusCode: 500);
                     }
 
                     byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
                     _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
                     return Results.File(fileBytes, "video/mp4", dto.VideoFile.FileName);
                 }
                 catch (Exception ex)
@@ -200,10 +202,11 @@ namespace FFmpeg.API.Endpoints
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error in ApplyGreenScreen endpoint");
+                logger.LogError(ex, "Error in GreenScreen endpoint");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
+
 
     }
 }
