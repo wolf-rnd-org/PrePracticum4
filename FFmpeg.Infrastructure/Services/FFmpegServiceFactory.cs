@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ﻿using Ffmpeg.Command;
 using Ffmpeg.Command.Commands;
 using FFmpeg.Core.Models;
@@ -21,6 +20,8 @@ namespace FFmpeg.Infrastructure.Services
 
         ICommand<CreateThumbnailModel> CreateThumbnailCommand();
         ICommand<CropModel> CreateCropCommand();
+        ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
+        
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -43,7 +44,6 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
-
         public ICommand<MergeVideosModel> CreateMergeVideosCommand()
         {
             return new MergeVideosCommand(_executor, _commandBuilder);
@@ -60,6 +60,10 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new ConvertAudioCommand(_executor, _commandBuilder);
         }
+        public ICommand<VideoCuttingModel> CreateVideoCuttingCommand()
+        {
+            return new VideoCuttingCommand(_executor, _commandBuilder);
+        }
 
         public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
         {
@@ -67,3 +71,4 @@ namespace FFmpeg.Infrastructure.Services
         }
     }
 }
+
