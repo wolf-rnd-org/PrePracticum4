@@ -4,7 +4,6 @@
     {
         public IFormFile AudioFile { get; set; }
         public double VolumeLevel { get; set; }
-        public string OutputFileName { get; set; }
-
+        public string ? OutputFileName { get; set; }
     }
 }

@@ -15,20 +15,20 @@ namespace FFmpeg.API.Endpoints
 {
     public static class VideoEndpoints
     {
+        const int MaxUploadSize = 104857600; // 100 MB
         public static void MapEndpoints(this WebApplication app)
         {
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
 
             app.MapPost("/api/video/change-speed", ChangeVideoSpeed)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100MB
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100MB
 
             app.MapPost("/api/video/change-volume", ChangeVolume)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100MB
-
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100MB
         }
 
         private static async Task<IResult> AddWatermark(
@@ -38,7 +38,6 @@ namespace FFmpeg.API.Endpoints
             var fileService = context.RequestServices.GetRequiredService<IFileService>();
             var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
             var logger = context.RequestServices.GetRequiredService<ILogger<Program>>(); // or a specific logger type
-
             try
             {
                 // Validate request
@@ -102,7 +101,6 @@ namespace FFmpeg.API.Endpoints
                 logger.LogError(ex, "Error in AddWatermark endpoint");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
-
         }
 
         private static async Task<IResult> ChangeVideoSpeed(
@@ -194,8 +192,6 @@ namespace FFmpeg.API.Endpoints
                     : dto.OutputFileName;
 
                 return Results.File(fileBytes, "video/mp4", outputFileName);
-
-
             }
             catch (Exception ex)
             {
@@ -203,6 +199,5 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
-
     }
 }
