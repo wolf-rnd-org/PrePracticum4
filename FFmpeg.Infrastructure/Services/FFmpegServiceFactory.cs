@@ -76,7 +76,5 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new VideoCompressionCommand(_executor, _commandBuilder);
         }
-
-
     }
 }
