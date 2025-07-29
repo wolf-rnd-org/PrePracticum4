@@ -370,8 +370,8 @@ namespace FFmpeg.API.Endpoints
                 if (!result.IsSuccess)
                 {
                     logger.LogError("FFmpeg merge command failed: {ErrorMessage}, Command: {Command}",
-                        result.Message, result.Output);
-                    return Results.Problem("Failed to merge videos: " + result.Message, statusCode: 500);
+                        result.ErrorMessage, result.CommandExecuted);
+                    return Results.Problem("Failed to merge videos: " + result.ErrorMessage, statusCode: 500);
                 }
 
                 // Read the output file
