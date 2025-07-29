@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿using Ffmpeg.Command;
 using Ffmpeg.Command.Commands;
 using FFmpeg.Core.Models;
@@ -14,11 +15,12 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
-<<<<<<< HEAD
         ICommand<MergeVideosModel> CreateMergeVideosCommand();
-=======
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
->>>>>>> c0293682b95b5f55feb084d63ef3fff3d646f75f
+        ICommand<ConvertAudioModel> CreateConvertAudioCommand();
+
+        ICommand<CreateThumbnailModel> CreateThumbnailCommand();
+        ICommand<CropModel> CreateCropCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -41,17 +43,27 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
-<<<<<<< HEAD
-        // MergeVideos
+
         public ICommand<MergeVideosModel> CreateMergeVideosCommand()
         {
             return new MergeVideosCommand(_executor, _commandBuilder);
-=======
-
+        }
         public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
         {
             return new ChangeSpeedCommand(_executor, _commandBuilder);
->>>>>>> c0293682b95b5f55feb084d63ef3fff3d646f75f
+        }
+        public ICommand<CropModel> CreateCropCommand()
+        {
+            throw new NotImplementedException();
+        }
+        public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
+        {
+            return new ConvertAudioCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
+        {
+            return new CreateThumbnailCommand(_executor, _commandBuilder);
         }
     }
 }
