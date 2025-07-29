@@ -15,6 +15,8 @@ namespace FFmpeg.Infrastructure.Services
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
         ICommand<RotationModel> CreateRotationCommand();
+        ICommand<CreateThumbnailModel> CreateThumbnailCommand();
+        ICommand<CropModel> CreateCropCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
     }
 
@@ -39,14 +41,23 @@ namespace FFmpeg.Infrastructure.Services
             return new RotationCommand(_executor, _commandBuilder);
         }
 
+        public ICommand<CropModel> CreateCropCommand()
+        {
+            throw new NotImplementedException();
+        }
+
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
 
+        public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
+        {
+            return new CreateThumbnailCommand(_executor, _commandBuilder);
+        }
         public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
         {
-            return new ChangeSpeedCommand(_executor, _commandBuilder);
+            throw new NotImplementedException();
         }
     }
 }

@@ -18,6 +18,8 @@ namespace FFmpeg.API.Endpoints
         const int MaxUploadSize = 104857600;
         public static void MapEndpoints(this WebApplication app)
         {
+            const int MaxUploadSize = 104857600;
+
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
@@ -28,7 +30,10 @@ namespace FFmpeg.API.Endpoints
 
             app.MapPost("/api/video/change-speed", ChangeVideoSpeed)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100MB
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+            app.MapPost("/api/video/create-thumbnail", CreateThumbnail)
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
 
         private static async Task<IResult> AddWatermark(
@@ -175,10 +180,69 @@ namespace FFmpeg.API.Endpoints
 
         }
 
-=========
+
+        // החדש - Crop
+        private static async Task<IResult> AddCrop(
+            HttpContext context,
+            [FromForm] CropDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                // בדיקות בסיסיות על הקלט
+                if (dto.VideoFile == null)
+                    return Results.BadRequest("Video file is required");
+
+                if (string.IsNullOrWhiteSpace(dto.StartTime) || string.IsNullOrWhiteSpace(dto.EndTime))
+                    return Results.BadRequest("StartTime and EndTime are required");
+
+                if (string.IsNullOrWhiteSpace(dto.OutputFileName))
+                    return Results.BadRequest("OutputFileName is required");
+
+                // שמירת קובץ וידאו קלט
+                string inputFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+
+                // שמירת שם קובץ פלט כפי שנשלח (לפי הדרישה שלך)
+                string outputFileName = dto.OutputFileName;
+
+                var model = new CropModel
+                {
+                    InputFile = inputFileName,
+                    StartTime = dto.StartTime,
+                    EndTime = dto.EndTime,
+                    OutputFile = outputFileName
+                };
+
+                var command = ffmpegService.CreateCropCommand();
+                var result = await command.ExecuteAsync(model);
+
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("FFmpeg Crop command failed: {ErrorMessage}, Command: {Command}",
+                        result.ErrorMessage, result.CommandExecuted);
+                    return Results.Problem("Failed to crop video: " + result.ErrorMessage, statusCode: 500);
+                }
+
+                var fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+
+                // ניקוי קבצים זמניים
+                _ = fileService.CleanupTempFilesAsync(new[] { inputFileName, outputFileName });
+
+                return Results.File(fileBytes, "video/mp4", outputFileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in AddCrop endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+
         private static async Task<IResult> ChangeVideoSpeed(
-          HttpContext context,
-          [FromForm] VideoSpeedChangeDto dto)
+            HttpContext context,
+            [FromForm] VideoSpeedChangeDto dto)
         {
             var fileService = context.RequestServices.GetRequiredService<IFileService>();
             var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
@@ -195,6 +259,12 @@ namespace FFmpeg.API.Endpoints
                 string outputFileName = await fileService.GenerateUniqueFileNameAsync(".mp4");
 
                 var command = ffmpegService.CreateVideoSpeedChangeCommand();
+                if (command == null)
+                {
+                    logger.LogError("Failed to create FFmpeg command for changing video speed.");
+                    return Results.Problem("Internal server error: Unable to process the request.", statusCode: 500);
+                }
+
                 var result = await command.ExecuteAsync(new ChangeSpeedModel
                 {
                     InputFile = videoFileName,
@@ -220,6 +290,66 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
->>>>>>>>> Temporary merge branch 2
+        private static async Task<IResult> CreateThumbnail(
+            HttpContext context,
+            [FromForm] CreateThumbnailDTO dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.VideoName == null || string.IsNullOrWhiteSpace(dto.ImageName))
+                {
+                    return Results.BadRequest("Video file and image name are required.");
+                }
+
+                if (!TimeSpan.TryParse(dto.Time, out var timestamp))
+                {
+                    return Results.BadRequest("Invalid time format. Use HH:mm:ss");
+                }
+
+                string inputFileName = await fileService.SaveUploadedFileAsync(dto.VideoName);
+
+                string outputImageName = dto.ImageName.EndsWith(".jpg") ? dto.ImageName : dto.ImageName + ".jpg";
+
+                List<string> filesToCleanup = new() { inputFileName, outputImageName };
+
+                try
+                {
+                    var command = ffmpegService.CreateThumbnailCommand();
+                    var result = await command.ExecuteAsync(new CreateThumbnailModel
+                    {
+                        VideoName = inputFileName,
+                        ImageName = outputImageName,
+                        Timestamp = timestamp
+                    });
+
+                    if (!result.IsSuccess)
+                    {
+                        logger.LogError("FFmpeg failed: {ErrorMessage}, Command: {Command}",
+                            result.ErrorMessage, result.CommandExecuted);
+                        return Results.Problem("Failed to create thumbnail: " + result.ErrorMessage, statusCode: 500);
+                    }
+
+                    byte[] imageBytes = await fileService.GetOutputFileAsync(outputImageName);
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+
+                    return Results.File(imageBytes, "image/jpeg", outputImageName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error during thumbnail generation");
+                    _ = fileService.CleanupTempFilesAsync(filesToCleanup);
+                    return Results.Problem("Internal error during thumbnail creation", statusCode: 500);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Unexpected error in CreateThumbnail");
+                return Results.Problem("Unexpected error: " + ex.Message, statusCode: 500);
+            }
+        }
     }
 }
