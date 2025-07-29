@@ -20,6 +20,7 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<CropModel> CreateCropCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
         ICommand<ConvertAudioModel> CreateConvertAudioCommand();
+        ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand();
 
     }
 
@@ -71,10 +72,9 @@ namespace FFmpeg.Infrastructure.Services
             return new ConvertAudioCommand(_executor, _commandBuilder);
         }
 
-  
-
-
+        public ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand()
+        {
+            return new VideoCompressionCommand(_executor, _commandBuilder);
+        }
     }
 }
-
-
