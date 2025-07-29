@@ -14,7 +14,7 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
-        ICommand<CreatePreviewModel> CreateCreatePreviewCommand();
+        ICommand<CreatePreviewModel> CreatePreviewCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -38,7 +38,7 @@ namespace FFmpeg.Infrastructure.Services
             return new WatermarkCommand(_executor, _commandBuilder);
         }
 
-        public ICommand<CreatePreviewModel> CreateCreatePreviewCommand()
+        public ICommand<CreatePreviewModel> CreatePreviewCommand()
         {
             return new CreatePreviewCommand(_executor, _commandBuilder);
         }
