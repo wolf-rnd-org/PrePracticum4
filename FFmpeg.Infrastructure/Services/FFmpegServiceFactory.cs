@@ -15,8 +15,10 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+
+        ICommand<CreatePreviewModel> CreatePreviewCommand();
+        ICommand<CropModel> CreateCropCommand();
         ICommandRunner CreateMixAudioCommand(string input1, string input2, string output);
-        ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -35,6 +37,11 @@ namespace FFmpeg.Infrastructure.Services
             _commandBuilder = new CommandBuilder(configuration);
         }
 
+        public ICommand<CropModel> CreateCropCommand()
+        {
+            throw new NotImplementedException();
+        }
+
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
@@ -46,9 +53,13 @@ namespace FFmpeg.Infrastructure.Services
         }
 
 
+        public ICommand<CreatePreviewModel> CreatePreviewCommand()
+        {
+            return new CreatePreviewCommand(_executor, _commandBuilder);
+        }
         public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
         {
-            return new ChangeSpeedCommand(_executor, _commandBuilder);
+            throw new NotImplementedException();
         }
     }
 }
