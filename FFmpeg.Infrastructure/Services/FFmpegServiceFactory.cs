@@ -1,4 +1,4 @@
-using Ffmpeg.Command;
+﻿using Ffmpeg.Command;
 using Ffmpeg.Command.Commands;
 using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Commands;
@@ -14,12 +14,14 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+        ICommand<ColorFilterModel> CreateColorFilterCommand();
         ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
         ICommand<CreateThumbnailModel> CreateThumbnailCommand();
         ICommand<CropModel> CreateCropCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
         ICommand<ConvertAudioModel> CreateConvertAudioCommand();
         ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand();
+
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -37,33 +39,44 @@ namespace FFmpeg.Infrastructure.Services
             _executor = new FFmpegExecutor(ffmpegPath, logOutput, logger);
             _commandBuilder = new CommandBuilder(configuration);
         }
+
+        public ICommand<CropModel> CreateCropCommand()
+        {
+            throw new NotImplementedException();
+        }
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
+        public ICommand<ColorFilterModel> CreateColorFilterCommand()
+        {
+            return new ColorFilterCommand(_executor, _commandBuilder);
+        }
+
         public ICommand<VideoCuttingModel> CreateVideoCuttingCommand()
         {
             return new VideoCuttingCommand(_executor, _commandBuilder);
         }
+
         public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
         {
             return new CreateThumbnailCommand(_executor, _commandBuilder);
-        }
-        public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
-        {
-            return new ConvertAudioCommand(_executor, _commandBuilder);
-        }
-        public ICommand<CropModel> CreateCropCommand()
-        {
-            throw new NotImplementedException();
         }
         public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
         {
             throw new NotImplementedException();
         }
+
+        public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
+        {
+            return new ConvertAudioCommand(_executor, _commandBuilder);
+        }
+
         public ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand()
         {
             return new VideoCompressionCommand(_executor, _commandBuilder);
         }
+
+
     }
 }
