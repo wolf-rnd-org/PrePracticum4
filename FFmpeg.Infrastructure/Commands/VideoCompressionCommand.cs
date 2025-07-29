@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Infrastructure.Commands
 {
-    public  class VideoCompressionCommand : BaseCommand, ICommand<VideoCompreesinModel>
+    public  class VideoCompressionCommand : BaseCommand, ICommand<VideoCompressionModel>
     {
         private readonly ICommandBuilder _commandBuilder;
 
@@ -19,7 +19,7 @@ namespace FFmpeg.Infrastructure.Commands
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
         }
 
-        public async Task<CommandResult> ExecuteAsync(VideoCompreesinModel model)
+        public async Task<CommandResult> ExecuteAsync(VideoCompressionModel model)
         {
             CommandBuilder = _commandBuilder
             .SetInput(model.InputFile)

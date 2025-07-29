@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Core.Models
 {
-    public class VideoCompreesinModel
+    class VideoCompreesinModel
     {
-        public string InputFile { get; set; }
-        public string OutputFile { get; set; }
+        public required string InputFile { get; set; }
+        public required string OutputFile { get; set; }
     }
 }
