@@ -17,13 +17,11 @@ namespace FFmpeg.API.Endpoints
     {
         public static void MapEndpoints(this WebApplication app)
         {
+            const int MaxUploadSize = 104857600;
+
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600));
-
-            app.MapPost("/api/video/remove-audio", RemoveAudio)
-                .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(104857600));
+                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
         }
 
         private static async Task<IResult> AddWatermark(
@@ -100,50 +98,116 @@ namespace FFmpeg.API.Endpoints
 
         }
 
-        private static async Task<IResult> RemoveAudio(
-    HttpContext context,
-    [FromForm] AudioRemovalDto dto)
+
+        // החדש - Crop
+        private static async Task<IResult> AddCrop(
+            HttpContext context,
+            [FromForm] CropDto dto)
         {
             var fileService = context.RequestServices.GetRequiredService<IFileService>();
             var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
             var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
 
-            if (dto.VideoFile == null)
-                return Results.BadRequest("Video file is required");
+            try
+            {
+                // בדיקות בסיסיות על הקלט
+                if (dto.VideoFile == null)
+                    return Results.BadRequest("Video file is required");
+
+                if (string.IsNullOrWhiteSpace(dto.StartTime) || string.IsNullOrWhiteSpace(dto.EndTime))
+                    return Results.BadRequest("StartTime and EndTime are required");
+
+                if (string.IsNullOrWhiteSpace(dto.OutputFileName))
+                    return Results.BadRequest("OutputFileName is required");
+
+                // שמירת קובץ וידאו קלט
+                string inputFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
+
+                // שמירת שם קובץ פלט כפי שנשלח (לפי הדרישה שלך)
+                string outputFileName = dto.OutputFileName;
+
+                var model = new CropModel
+                {
+                    InputFile = inputFileName,
+                    StartTime = dto.StartTime,
+                    EndTime = dto.EndTime,
+                    OutputFile = outputFileName
+                };
+
+                var command = ffmpegService.CreateCropCommand();
+                var result = await command.ExecuteAsync(model);
+
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("FFmpeg Crop command failed: {ErrorMessage}, Command: {Command}",
+                        result.ErrorMessage, result.CommandExecuted);
+                    return Results.Problem("Failed to crop video: " + result.ErrorMessage, statusCode: 500);
+                }
+
+                var fileBytes = await fileService.GetOutputFileAsync(outputFileName);
+
+                // ניקוי קבצים זמניים
+                _ = fileService.CleanupTempFilesAsync(new[] { inputFileName, outputFileName });
+
+                return Results.File(fileBytes, "video/mp4", outputFileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in AddCrop endpoint");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+
+        private static async Task<IResult> ChangeVideoSpeed(
+            HttpContext context,
+            [FromForm] VideoSpeedChangeDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
 
             try
             {
-                // שמירת הקובץ שהועלה
+                if (dto.VideoFile == null || dto.Speed <= 0)
+                {
+                    return Results.BadRequest("Video file is required and speed factor must be positive");
+                }
+
                 string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
-                string extension = Path.GetExtension(dto.VideoFile.FileName);
-                string outputFileName = await fileService.GenerateUniqueFileNameAsync(extension);
+                string outputFileName = await fileService.GenerateUniqueFileNameAsync(".mp4");
 
-                List<string> filesToCleanup = new List<string> { videoFileName, outputFileName };
+                var command = ffmpegService.CreateVideoSpeedChangeCommand();
+                if (command == null)
+                {
+                    logger.LogError("Failed to create FFmpeg command for changing video speed.");
+                    return Results.Problem("Internal server error: Unable to process the request.", statusCode: 500);
+                }
 
-                var command = ffmpegService.();
-                var result = await command.ExecuteAsync(new RemoveAudioModel
+                var result = await command.ExecuteAsync(new ChangeSpeedModel
                 {
                     InputFile = videoFileName,
+                    Speed = dto.Speed,
                     OutputFile = outputFileName
                 });
 
                 if (!result.IsSuccess)
                 {
-                    logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {Command}",
-                        result.ErrorMessage, result.CommandExecuted);
-                    return Results.Problem("Failed to remove audio: " + result.ErrorMessage, statusCode: 500);
+                    logger.LogError("FFmpeg command failed: {ErrorMessage}", result.ErrorMessage);
+                    return Results.Problem("Failed to change video speed: " + result.ErrorMessage, statusCode: 500);
                 }
 
                 byte[] fileBytes = await fileService.GetOutputFileAsync(outputFileName);
-                _ = fileService.CleanupTempFilesAsync(filesToCleanup);
 
-                return Results.File(fileBytes, "video/mp4", dto.VideoFile.FileName);
+                _ = fileService.CleanupTempFilesAsync(new List<string> { videoFileName, outputFileName });
+
+                return Results.File(fileBytes, "video/mp4", dto.OutputFileName ?? dto.VideoFile.FileName);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error processing remove audio request");
+                logger.LogError(ex, "Error processing change speed request");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
+
         }
 
 
