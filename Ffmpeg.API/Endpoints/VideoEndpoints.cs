@@ -180,7 +180,6 @@ namespace FFmpeg.API.Endpoints
                 string videoFileName = await fileService.SaveUploadedFileAsync(dto.VideoFile);
                 string outputFileName = await fileService.GenerateUniqueFileNameAsync(".mp4");
 
-                // Fix for CS0246: Replace 'IFFmpegCommand<ChangeSpeedModel>' with 'ICommand<ChangeSpeedModel>' as per the provided type signature.
                 var command = ffmpegService.CreateVideoSpeedChangeCommand();
                 if (command == null)
                 {

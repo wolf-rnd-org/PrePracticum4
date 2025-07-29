@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FFmpeg.Infrastructure.Commands
 {
-    public  class VideoCompressionCommand : BaseCommand, ICommand<VideoCompressionModel>
+    public class VideoCompressionCommand : BaseCommand, ICommand<VideoCompressionModel>
     {
         private readonly ICommandBuilder _commandBuilder;
 
@@ -22,10 +22,10 @@ namespace FFmpeg.Infrastructure.Commands
         public async Task<CommandResult> ExecuteAsync(VideoCompressionModel model)
         {
             CommandBuilder = _commandBuilder
-            .SetInput(model.InputFile)
-            .SetVideoCodec("libx264")
-            .AddOption("-crf 28") // איכות נמוכה יותר = קובץ קטן יותר
-            .SetOutput(model.OutputFile);
+                .SetInput(model.InputFile)
+                .SetVideoCodec("libx264")
+                .AddOption("-crf 28") // Lower quality = smaller file
+                .SetOutput(model.OutputFile);
 
             return await RunAsync();
         }
