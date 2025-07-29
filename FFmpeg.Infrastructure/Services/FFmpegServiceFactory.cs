@@ -4,17 +4,22 @@ using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Commands;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FFmpeg.Infrastructure.Services
 {
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+        ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
         ICommand<CreateThumbnailModel> CreateThumbnailCommand();
         ICommand<CropModel> CreateCropCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
-        ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand();
         ICommand<ConvertAudioModel> CreateConvertAudioCommand();
+        ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -36,9 +41,17 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
+        public ICommand<VideoCuttingModel> CreateVideoCuttingCommand()
+        {
+            return new VideoCuttingCommand(_executor, _commandBuilder);
+        }
         public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
         {
             return new CreateThumbnailCommand(_executor, _commandBuilder);
+        }
+        public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
+        {
+            return new ConvertAudioCommand(_executor, _commandBuilder);
         }
         public ICommand<CropModel> CreateCropCommand()
         {
@@ -51,10 +64,6 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand()
         {
             return new VideoCompressionCommand(_executor, _commandBuilder);
-        }
-        public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
-        {
-            return new ConvertAudioCommand(_executor, _commandBuilder);
         }
     }
 }
