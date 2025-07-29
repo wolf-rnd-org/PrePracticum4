@@ -18,7 +18,6 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
         ICommand<CreateThumbnailModel> CreateThumbnailCommand();
         ICommand<GreenScreenModel> CreateGreenScreenCommand();
-        ICommand<CreatePreviewModel> CreatePreviewCommand();
         ICommand<CropModel> CreateCropCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
         ICommand<ConvertAudioModel> CreateConvertAudioCommand();

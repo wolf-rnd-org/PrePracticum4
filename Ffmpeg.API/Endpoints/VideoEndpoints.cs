@@ -46,8 +46,7 @@ namespace FFmpeg.API.Endpoints
 
             app.MapPost("/api/video/compress", CompressVideo)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100MB
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100MB
 
             app.MapPost("/api/video/greenscreen", ApplyGreenScreen)
                 .DisableAntiforgery()
