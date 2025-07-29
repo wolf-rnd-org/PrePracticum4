@@ -17,8 +17,6 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<WatermarkModel> CreateWatermarkCommand();
 
 
-        ICommand<CreatePreviewModel> CreatePreviewCommand();
-
         ICommand<CreateThumbnailModel> CreateThumbnailCommand();
 
         ICommand<CropModel> CreateCropCommand();
@@ -61,9 +59,6 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new CreateThumbnailCommand(_executor, _commandBuilder);
         }
-        public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
-        {
-            throw new NotImplementedException();
-        }
+       
     }
 }

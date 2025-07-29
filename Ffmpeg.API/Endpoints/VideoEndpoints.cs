@@ -22,7 +22,7 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
 
-                .WithMetadata(new RequestSizeLimitAttribute(104857600)); // 100 MB
+               
 
             
 
