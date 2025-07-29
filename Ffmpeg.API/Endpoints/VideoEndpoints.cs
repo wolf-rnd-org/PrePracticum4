@@ -39,8 +39,6 @@ namespace FFmpeg.API.Endpoints
               .DisableAntiforgery()
               .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
-
-
         private static async Task<IResult> AddWatermark(
             HttpContext context,
             [FromForm] WatermarkDto dto)
