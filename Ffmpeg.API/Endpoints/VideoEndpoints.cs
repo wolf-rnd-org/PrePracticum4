@@ -36,7 +36,6 @@ namespace FFmpeg.API.Endpoints
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
 
-
         private static async Task<IResult> AddWatermark(
             HttpContext context,
             [FromForm] WatermarkDto dto)
@@ -93,7 +92,6 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
-
         private static async Task<IResult> CompressVideo(
             HttpContext context,
             [FromForm] VideoCompreesionDto dto)
@@ -144,7 +142,6 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
-
         private static async Task<IResult> ChangeVideoSpeed(
             HttpContext context,
             [FromForm] VideoSpeedChangeDto dto)
