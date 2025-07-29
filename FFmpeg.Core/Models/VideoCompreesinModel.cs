@@ -8,5 +8,6 @@ namespace FFmpeg.Core.Models
 {
     class VideoCompreesinModel
     {
+
     }
 }
