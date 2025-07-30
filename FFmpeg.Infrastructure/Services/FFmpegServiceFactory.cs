@@ -14,15 +14,15 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
-        ICommand<ColorFilterModel> CreateColorFilterCommand();
-        ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
+        ICommand<ConvertAudioModel> CreateConvertAudioCommand();
+        ICommand<RotationModel> CreateRotationCommand();
         ICommand<CreateThumbnailModel> CreateThumbnailCommand();
         ICommand<GreenScreenModel> CreateGreenScreenCommand();
         ICommand<CropModel> CreateCropCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
-        ICommand<ConvertAudioModel> CreateConvertAudioCommand();
+        ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
+        ICommand<ColorFilterModel> CreateColorFilterCommand();
         ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand();
-
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -72,7 +72,10 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new ConvertAudioCommand(_executor, _commandBuilder);
         }
-
+        public ICommand<RotationModel> CreateRotationCommand()
+        {
+            return new RotationCommand(_executor, _commandBuilder);
+        }
         public ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand()
         {
             return new VideoCompressionCommand(_executor, _commandBuilder);
