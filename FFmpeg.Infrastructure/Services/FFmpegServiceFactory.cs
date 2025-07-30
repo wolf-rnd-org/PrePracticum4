@@ -23,6 +23,7 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
         ICommand<ColorFilterModel> CreateColorFilterCommand();
         ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand();
+        ICommand<ChangeVolumeModel> CreateVolumeChangeCommand();
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -84,6 +85,11 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<GreenScreenModel> CreateGreenScreenCommand()
         {
             return new GreenScreenCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<ChangeVolumeModel> CreateVolumeChangeCommand()
+        {
+            return new ChangeVolumeCommand(_executor, _commandBuilder);
         }
     }
 }

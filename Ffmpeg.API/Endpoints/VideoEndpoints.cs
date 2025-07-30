@@ -28,9 +28,9 @@ namespace FFmpeg.API.Endpoints
 
             app.MapPost("/api/video/rotation", AddRotation)
                 .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); 
+                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
 
-                //.WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+            //.WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
             app.MapPost("/api/video/color-filter", ApplyColorFilter)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
@@ -58,6 +58,10 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/greenscreen", ApplyGreenScreen)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
+
+            app.MapPost("/api/video/change-volume", ChangeVolume)
+            .DisableAntiforgery()
+            .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
         }
 
         // ---------- VIDEO ----------
@@ -240,7 +244,7 @@ namespace FFmpeg.API.Endpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error in RotateVideo endpoint");
-                              return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
 
         }
@@ -407,6 +411,57 @@ namespace FFmpeg.API.Endpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error processing change speed request");
+                return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
+            }
+        }
+
+        private static async Task<IResult> ChangeVolume(
+            HttpContext context,
+            [FromForm] ChangeVolumeDto dto)
+        {
+            var fileService = context.RequestServices.GetRequiredService<IFileService>();
+            var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                if (dto.AudioFile == null || dto.VolumeLevel < 0)
+                {
+                    return Results.BadRequest("Audio file is required and volume must be non-negative");
+                }
+
+                string inputFile = await fileService.SaveUploadedFileAsync(dto.AudioFile);
+                string outputFile = await fileService.GenerateUniqueFileNameAsync(".mp4"); // או הפורמט הרלוונטי
+
+                var command = ffmpegService.CreateVolumeChangeCommand();
+                var result = await command.ExecuteAsync(new ChangeVolumeModel
+                {
+                    InputFile = inputFile,
+                    OutputFile = outputFile,
+                    VolumeLevel = dto.VolumeLevel,
+                    IsVideo = true,
+                    VideoCodec = "libx264" // חובה אם יש וידאו
+                });
+
+
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("FFmpeg volume command failed: {ErrorMessage}", result.ErrorMessage);
+                    return Results.Problem("Failed to change volume: " + result.ErrorMessage, statusCode: 500);
+                }
+
+                byte[] fileBytes = await fileService.GetOutputFileAsync(outputFile);
+
+                _ = fileService.CleanupTempFilesAsync(new List<string> { inputFile, outputFile });
+                var outputFileName = string.IsNullOrWhiteSpace(dto.OutputFileName)
+                    ? Path.GetFileNameWithoutExtension(dto.AudioFile.FileName) + "-change-volume.mp4"
+                    : dto.OutputFileName;
+
+                return Results.File(fileBytes, "video/mp4", outputFileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error processing volume change request");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
