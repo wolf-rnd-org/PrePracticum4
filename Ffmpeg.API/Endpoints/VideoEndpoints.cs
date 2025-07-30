@@ -15,12 +15,7 @@ namespace FFmpeg.API.Endpoints
 {
     public static class VideoEndpoints
     {
-<<<<<<< HEAD
         private const int MaxUploadSize = 104857600; // 100 MB
-
-=======
-        const int MaxUploadSize = 104857600; // 100 MB
->>>>>>> f25631fc0c495b8b4e39c7d33ff89ace4aefc1d1
         public static void MapEndpoints(this WebApplication app)
         {
             // ----------- VIDEO ENDPOINT -----------
@@ -46,8 +41,8 @@ namespace FFmpeg.API.Endpoints
                 .Accepts<ConvertAudioDto>("multipart/form-data");
             app.MapPost("/api/video/change-speed", ChangeVideoSpeed)
                 .DisableAntiforgery()
-<<<<<<< HEAD
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+            
             app.MapPost("/api/video/create-thumbnail", CreateThumbnail)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
@@ -67,13 +62,10 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/change-volume", ChangeVolume)
             .DisableAntiforgery()
             .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
-=======
-                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100MB
 
             app.MapPost("/api/video/change-volume", ChangeVolume)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100MB
->>>>>>> f25631fc0c495b8b4e39c7d33ff89ace4aefc1d1
         }
 
         // ---------- VIDEO ----------
@@ -83,12 +75,8 @@ namespace FFmpeg.API.Endpoints
         {
             var fileService = context.RequestServices.GetRequiredService<IFileService>();
             var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
-<<<<<<< HEAD
-            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-
-=======
             var logger = context.RequestServices.GetRequiredService<ILogger<Program>>(); // or a specific logger type
->>>>>>> f25631fc0c495b8b4e39c7d33ff89ace4aefc1d1
+
             try
             {
                 if (dto.VideoFile == null || dto.WatermarkFile == null)
@@ -142,7 +130,6 @@ namespace FFmpeg.API.Endpoints
                 logger.LogError(ex, "Error in AddWatermark endpoint");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
-<<<<<<< HEAD
         }
 
         // ---------- AUDIO ----------
@@ -263,9 +250,6 @@ namespace FFmpeg.API.Endpoints
                 logger.LogError(ex, "Error in RotateVideo endpoint");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
-
-=======
->>>>>>> f25631fc0c495b8b4e39c7d33ff89ace4aefc1d1
         }
 
         private static async Task<IResult> ApplyColorFilter(
@@ -434,16 +418,9 @@ namespace FFmpeg.API.Endpoints
             }
         }
 
-<<<<<<< HEAD
         private static async Task<IResult> ChangeVolume(
             HttpContext context,
             [FromForm] ChangeVolumeDto dto)
-=======
-        //change volum 
-        private static async Task<IResult> ChangeVolume(
-        HttpContext context,
-        [FromForm] ChangeVolumeDto dto)
->>>>>>> f25631fc0c495b8b4e39c7d33ff89ace4aefc1d1
         {
             var fileService = context.RequestServices.GetRequiredService<IFileService>();
             var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
@@ -465,14 +442,9 @@ namespace FFmpeg.API.Endpoints
                     InputFile = inputFile,
                     OutputFile = outputFile,
                     VolumeLevel = dto.VolumeLevel,
-<<<<<<< HEAD
-                    IsVideo = true,
-=======
-                    IsVideo = true, // <-- קריטי!
->>>>>>> f25631fc0c495b8b4e39c7d33ff89ace4aefc1d1
+                    IsVideo = true, 
                     VideoCodec = "libx264" // חובה אם יש וידאו
                 });
-
 
                 if (!result.IsSuccess)
                 {
@@ -495,7 +467,7 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
-<<<<<<< HEAD
+
         private static async Task<IResult> CreateThumbnail(
             HttpContext context,
             [FromForm] CreateThumbnailDTO dto)
@@ -659,8 +631,8 @@ namespace FFmpeg.API.Endpoints
             }
         }
         private static async Task<IResult> CompressVideo(
-    HttpContext context,
-    [FromForm] VideoCompreesionDto dto)
+            HttpContext context,
+            [FromForm] VideoCompreesionDto dto)
         {
             var fileService = context.RequestServices.GetRequiredService<IFileService>();
             var ffmpegService = context.RequestServices.GetRequiredService<IFFmpegServiceFactory>();
@@ -764,7 +736,5 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
-=======
->>>>>>> f25631fc0c495b8b4e39c7d33ff89ace4aefc1d1
     }
 }

@@ -20,12 +20,9 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<GreenScreenModel> CreateGreenScreenCommand();
         ICommand<CropModel> CreateCropCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
-<<<<<<< HEAD
         ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
         ICommand<ColorFilterModel> CreateColorFilterCommand();
         ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand();
-=======
->>>>>>> f25631fc0c495b8b4e39c7d33ff89ace4aefc1d1
         ICommand<ChangeVolumeModel> CreateVolumeChangeCommand();
     }
 
@@ -94,11 +91,5 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new ChangeVolumeCommand(_executor, _commandBuilder);
         }
-
-        public ICommand<ChangeVolumeModel> CreateVolumeChangeCommand()
-        {
-            return new ChangeVolumeCommand(_executor, _commandBuilder);
-        }
-
     }
 }
