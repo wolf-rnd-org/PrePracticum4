@@ -14,9 +14,17 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
+        ICommand<ConvertAudioModel> CreateConvertAudioCommand();
+        ICommand<RotationModel> CreateRotationCommand();
         ICommand<CreateThumbnailModel> CreateThumbnailCommand();
+        ICommand<GreenScreenModel> CreateGreenScreenCommand();
         ICommand<CropModel> CreateCropCommand();
         ICommandRunner CreateMixAudioCommand(string input1, string input2, string output);
+        ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
+        ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
+        ICommand<ColorFilterModel> CreateColorFilterCommand();
+        ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand();
+
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -39,15 +47,25 @@ namespace FFmpeg.Infrastructure.Services
         {
             throw new NotImplementedException();
         }
-
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
+
         // using FFmpeg.Infrastructure.Commands;
         public ICommandRunner CreateMixAudioCommand(string input1, string input2, string output)
         {
             return new MixAudioCommand(input1, input2, output);
+        }
+
+        public ICommand<ColorFilterModel> CreateColorFilterCommand()
+        {
+            return new ColorFilterCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<VideoCuttingModel> CreateVideoCuttingCommand()
+        {
+            return new VideoCuttingCommand(_executor, _commandBuilder);
         }
 
 
@@ -55,6 +73,29 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new CreateThumbnailCommand(_executor, _commandBuilder);
         }
-       
+
+        public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
+        {
+            throw new NotImplementedException();
+        }
+
+        public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
+        {
+            return new ConvertAudioCommand(_executor, _commandBuilder);
+        }
+        public ICommand<RotationModel> CreateRotationCommand()
+        {
+            return new RotationCommand(_executor, _commandBuilder);
+        }
+        public ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand()
+        {
+            return new VideoCompressionCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<GreenScreenModel> CreateGreenScreenCommand()
+        {
+            return new GreenScreenCommand(_executor, _commandBuilder);
+        }
+
     }
 }
