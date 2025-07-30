@@ -21,12 +21,7 @@ namespace FFmpeg.API.Endpoints
 
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
-
-               
-
             
-
-
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
 
             app.MapPost("/api/video/change-speed", ChangeVideoSpeed)

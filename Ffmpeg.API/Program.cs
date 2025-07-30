@@ -57,8 +57,6 @@ app.UseAuthorization();
 AudioEndpoints.MapEndpoints(app);
 VideoEndpoints.MapEndpoints(app);
 
-
-
 app.MapGet("/", () => { return "FFmpeg API is running"; });
 app.Run();
 

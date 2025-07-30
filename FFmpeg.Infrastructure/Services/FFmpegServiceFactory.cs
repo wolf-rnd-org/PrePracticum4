@@ -9,16 +9,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace FFmpeg.Infrastructure.Services
 {
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
-
-
         ICommand<CreateThumbnailModel> CreateThumbnailCommand();
-
         ICommand<CropModel> CreateCropCommand();
         ICommandRunner CreateMixAudioCommand(string input1, string input2, string output);
     }
