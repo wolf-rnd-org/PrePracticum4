@@ -17,6 +17,7 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<ConvertAudioModel> CreateConvertAudioCommand();
         ICommand<RotationModel> CreateRotationCommand();
         ICommand<CreateThumbnailModel> CreateThumbnailCommand();
+        ICommand<GreenScreenModel> CreateGreenScreenCommand();
         ICommand<CropModel> CreateCropCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
         ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
@@ -78,6 +79,11 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand()
         {
             return new VideoCompressionCommand(_executor, _commandBuilder);
+        }
+
+        public ICommand<GreenScreenModel> CreateGreenScreenCommand()
+        {
+            return new GreenScreenCommand(_executor, _commandBuilder);
         }
     }
 }
