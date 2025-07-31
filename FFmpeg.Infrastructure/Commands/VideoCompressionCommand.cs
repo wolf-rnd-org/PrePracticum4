@@ -4,6 +4,7 @@ using FFmpeg.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,13 +20,17 @@ namespace FFmpeg.Infrastructure.Commands
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
         }
 
+
         public async Task<CommandResult> ExecuteAsync(VideoCompreesinModel model)
+
         {
             CommandBuilder = _commandBuilder
-                .SetInput(model.InputFile)
-                .SetVideoCodec("libx264")
-                .AddOption("-crf 28") // Lower quality = smaller file
-                .SetOutput(model.OutputFile);
+
+            .SetInput(model.InputFile)
+            .SetVideoCodec("libx264")
+            .AddOption("-crf 28") // איכות נמוכה יותר = קובץ קטן יותר
+            .SetOutput(model.OutputFile);
+
 
             return await RunAsync();
         }

@@ -1,5 +1,6 @@
 ﻿using Ffmpeg.Command;
 using Ffmpeg.Command.Commands;
+using FFmpeg.Core.Interfaces;
 using FFmpeg.Core.Models;
 using FFmpeg.Infrastructure.Commands;
 using Microsoft.Extensions.Configuration;
@@ -8,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace FFmpeg.Infrastructure.Services
 {
     public interface IFFmpegServiceFactory
@@ -19,10 +19,12 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<CreateThumbnailModel> CreateThumbnailCommand();
         ICommand<GreenScreenModel> CreateGreenScreenCommand();
         ICommand<CropModel> CreateCropCommand();
+        ICommandRunner CreateMixAudioCommand(string input1, string input2, string output);
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
         ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
         ICommand<ColorFilterModel> CreateColorFilterCommand();
         ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand();
+
         ICommand<ChangeVolumeModel> CreateVolumeChangeCommand();
     }
 
@@ -50,6 +52,13 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
+
+        // using FFmpeg.Infrastructure.Commands;
+        public ICommandRunner CreateMixAudioCommand(string input1, string input2, string output)
+        {
+            return new MixAudioCommand(input1, input2, output);
+        }
+
         public ICommand<ColorFilterModel> CreateColorFilterCommand()
         {
             return new ColorFilterCommand(_executor, _commandBuilder);
@@ -60,10 +69,12 @@ namespace FFmpeg.Infrastructure.Services
             return new VideoCuttingCommand(_executor, _commandBuilder);
         }
 
+
         public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
         {
             return new CreateThumbnailCommand(_executor, _commandBuilder);
         }
+
         public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
         {
             throw new NotImplementedException();

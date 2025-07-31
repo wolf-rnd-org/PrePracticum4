@@ -1,11 +1,10 @@
-﻿namespace FFmpeg.API.DTOs
+﻿
+namespace FFmpeg.API.DTOs
 {
     public class VideoSpeedChangeDto
     {
-            public IFormFile VideoFile { get; set; }
-
-            public double Speed{ get; set; } 
-
-            public string OutputFileName { get; set; }
+        public required IFormFile VideoFile { get; set; }
+        public required double Speed { get; set; }  // לדוגמה 0.5 להאטה או 2 להאצה
+        public string? OutputFileName { get; set; }
     }
 }

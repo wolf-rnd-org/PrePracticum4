@@ -23,6 +23,7 @@ namespace FFmpeg.API.Endpoints
 
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
+              
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
 
             app.MapPost("/api/video/rotation", AddRotation)
@@ -32,6 +33,7 @@ namespace FFmpeg.API.Endpoints
             //.WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
             app.MapPost("/api/video/color-filter", ApplyColorFilter)
                 .DisableAntiforgery()
+
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
 
             // ----------- AUDIO ENDPOINT -----------
@@ -39,6 +41,8 @@ namespace FFmpeg.API.Endpoints
                 .DisableAntiforgery()
                 .WithName("ConvertAudio")
                 .Accepts<ConvertAudioDto>("multipart/form-data");
+          
+           
             app.MapPost("/api/video/change-speed", ChangeVideoSpeed)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
@@ -272,6 +276,7 @@ namespace FFmpeg.API.Endpoints
 
                 List<string> filesToCleanup = new() { inputFile, outputFile };
 
+
                 try
                 {
                     var command = ffmpegService.CreateColorFilterCommand();
@@ -367,6 +372,7 @@ namespace FFmpeg.API.Endpoints
             }
         }
 
+      
         private static async Task<IResult> ChangeVideoSpeed(
             HttpContext context,
             [FromForm] VideoSpeedChangeDto dto)
