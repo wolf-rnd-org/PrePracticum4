@@ -134,6 +134,30 @@ namespace FFmpeg.Infrastructure.Commands
             return this;
         }
 
+        public ICommandBuilder SetStartTime(string startTime)
+        {
+            if (!string.IsNullOrEmpty(startTime))
+            {
+                _options.Add($"-ss {startTime}");
+            }
+            return this;
+        }
+
+        public ICommandBuilder SetEndTime(string endTime)
+        {
+            if (!string.IsNullOrEmpty(endTime))
+            {
+                _options.Add($"-to {endTime}");
+            }
+            return this;
+        }
+
+        public ICommandBuilder SetCopyCodec()
+        {
+            _options.Add("-c copy");
+            return this;
+        }
+
         public string Build()
         {
             var command = new List<string>();

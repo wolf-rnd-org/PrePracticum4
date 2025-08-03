@@ -4,33 +4,33 @@ using FFmpeg.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FFmpeg.Infrastructure.Commands
 {
-    public class VideoCompressionCommand : BaseCommand, ICommand<VideoCompreesinModel>
+    public class ColorFilterCommand : BaseCommand, ICommand<ColorFilterModel>
     {
         private readonly ICommandBuilder _commandBuilder;
 
-        public VideoCompressionCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
+        public ColorFilterCommand(FFmpegExecutor executor, ICommandBuilder commandBuilder)
             : base(executor)
         {
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
         }
 
-
-        public async Task<CommandResult> ExecuteAsync(VideoCompreesinModel model)
-
+        public async Task<CommandResult> ExecuteAsync(ColorFilterModel model)
         {
             CommandBuilder = _commandBuilder
+                .SetInput(model.InputFile)
+                .AddOption("-vf \"hue=s=0\"");
 
-            .SetInput(model.InputFile)
-            .SetVideoCodec("libx264")
-            .AddOption("-crf 28") // איכות נמוכה יותר = קובץ קטן יותר
-            .SetOutput(model.OutputFile);
+            if (model.IsVideo)
+            {
+                CommandBuilder.SetVideoCodec(model.VideoCodec);
+            }
 
+            CommandBuilder.SetOutput(model.OutputFile, !model.IsVideo);
 
             return await RunAsync();
         }
