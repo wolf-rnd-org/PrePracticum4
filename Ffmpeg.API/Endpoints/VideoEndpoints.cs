@@ -23,17 +23,14 @@ namespace FFmpeg.API.Endpoints
 
             app.MapPost("/api/video/watermark", AddWatermark)
                 .DisableAntiforgery()
-              
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
 
             app.MapPost("/api/video/rotation", AddRotation)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
 
-            //.WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
             app.MapPost("/api/video/color-filter", ApplyColorFilter)
                 .DisableAntiforgery()
-
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
 
             // ----------- AUDIO ENDPOINT -----------
@@ -112,7 +109,7 @@ namespace FFmpeg.API.Endpoints
 
                     if (!result.IsSuccess)
                     {
-                        logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {Command}",
+                        logger.LogError("FFmpeg command failed: {ErrorMessage}, Command: {CommandExecuted}",
                             result.ErrorMessage, result.CommandExecuted);
                         return Results.Problem("Failed to add watermark: " + result.ErrorMessage, statusCode: 500);
                     }
@@ -422,6 +419,7 @@ namespace FFmpeg.API.Endpoints
                 logger.LogError(ex, "Error processing change speed request");
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
+
         }
 
         private static async Task<IResult> ChangeVolume(
