@@ -16,7 +16,6 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
-<<<<<<< HEAD
         ICommand<MergeVideosModel> CreateMergeVideosCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
         ICommand<ConvertAudioModel> CreateConvertAudioCommand();
@@ -25,19 +24,12 @@ namespace FFmpeg.Infrastructure.Services
         ICommand<CropModel> CreateCropCommand();
         ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
         
-=======
-        ICommand<ConvertAudioModel> CreateConvertAudioCommand();
         ICommand<RotationModel> CreateRotationCommand();
-        ICommand<CreateThumbnailModel> CreateThumbnailCommand();
         ICommand<GreenScreenModel> CreateGreenScreenCommand();
-        ICommand<CropModel> CreateCropCommand();
         ICommandRunner CreateMixAudioCommand(string input1, string input2, string output);
-        ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
-        ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
         ICommand<ColorFilterModel> CreateColorFilterCommand();
         ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand();
         ICommand<ChangeVolumeModel> CreateVolumeChangeCommand();
->>>>>>> 07ce67be61dff188527b524086d791e4ae0b4de8
     }
 
     public class FFmpegServiceFactory : IFFmpegServiceFactory
@@ -56,18 +48,15 @@ namespace FFmpeg.Infrastructure.Services
             _commandBuilder = new CommandBuilder(configuration);
         }
 
-<<<<<<< HEAD
-=======
+
         public ICommand<CropModel> CreateCropCommand()
         {
             throw new NotImplementedException();
         }
->>>>>>> 07ce67be61dff188527b524086d791e4ae0b4de8
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
         }
-<<<<<<< HEAD
         public ICommand<MergeVideosModel> CreateMergeVideosCommand()
         {
             return new MergeVideosCommand(_executor, _commandBuilder);
@@ -76,9 +65,6 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new ChangeSpeedCommand(_executor, _commandBuilder);
         }
-        public ICommand<CropModel> CreateCropCommand()
-        {
-=======
         public ICommandRunner CreateMixAudioCommand(string input1, string input2, string output)
         {
             return new MixAudioCommand(input1, input2, output);
@@ -95,26 +81,11 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new CreateThumbnailCommand(_executor, _commandBuilder);
         }
-        public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
-        {
->>>>>>> 07ce67be61dff188527b524086d791e4ae0b4de8
-            throw new NotImplementedException();
-        }
         public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
         {
             return new ConvertAudioCommand(_executor, _commandBuilder);
         }
-<<<<<<< HEAD
-        public ICommand<VideoCuttingModel> CreateVideoCuttingCommand()
-        {
-            return new VideoCuttingCommand(_executor, _commandBuilder);
-        }
-
-        public ICommand<CreateThumbnailModel> CreateThumbnailCommand()
-        {
-            return new CreateThumbnailCommand(_executor, _commandBuilder);
-=======
-        public ICommand<RotationModel> CreateRotationCommand()
+       public ICommand<RotationModel> CreateRotationCommand()
         {
             return new RotationCommand(_executor, _commandBuilder);
         }
@@ -129,7 +100,6 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<ChangeVolumeModel> CreateVolumeChangeCommand()
         {
             return new ChangeVolumeCommand(_executor, _commandBuilder);
->>>>>>> 07ce67be61dff188527b524086d791e4ae0b4de8
         }
     }
 }

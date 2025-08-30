@@ -32,6 +32,9 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/color-filter", ApplyColorFilter)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
+            app.MapPost("/api/video/merge", MergeVideos)
+                .DisableAntiforgery()
+                .WithMetadata(new RequestSizeLimitAttribute(2 * MaxUploadSize)); // 200 MB for two videos
 
             // ----------- AUDIO ENDPOINT -----------
             app.MapPost("/api/audio/convert", ConvertAudio)
@@ -47,10 +50,7 @@ namespace FFmpeg.API.Endpoints
             app.MapPost("/api/video/create-thumbnail", CreateThumbnail)
                 .DisableAntiforgery()
                 .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize));
-            app.MapPost("/api/video/merge", MergeVideos)
-                .DisableAntiforgery()
-                .WithMetadata(new RequestSizeLimitAttribute(2 * MaxUploadSize)); // 200 MB for two videos
-
+            
             app.MapPost("/api/video/cut", CutVideo)
                .DisableAntiforgery()
                .WithMetadata(new RequestSizeLimitAttribute(MaxUploadSize)); // 100 MB
@@ -371,11 +371,7 @@ namespace FFmpeg.API.Endpoints
                 return Results.Problem("An error occurred: " + ex.Message, statusCode: 500);
             }
         }
-<<<<<<< HEAD
-=======
 
-      
->>>>>>> 07ce67be61dff188527b524086d791e4ae0b4de8
         private static async Task<IResult> ChangeVideoSpeed(
             HttpContext context,
             [FromForm] VideoSpeedChangeDto dto)
