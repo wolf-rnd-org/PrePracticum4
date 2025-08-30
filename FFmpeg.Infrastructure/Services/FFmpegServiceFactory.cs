@@ -16,14 +16,17 @@ namespace FFmpeg.Infrastructure.Services
     public interface IFFmpegServiceFactory
     {
         ICommand<WatermarkModel> CreateWatermarkCommand();
-        ICommand<ConvertAudioModel> CreateConvertAudioCommand();
-        ICommand<RotationModel> CreateRotationCommand();
-        ICommand<CreateThumbnailModel> CreateThumbnailCommand();
-        ICommand<GreenScreenModel> CreateGreenScreenCommand();
-        ICommand<CropModel> CreateCropCommand();
-        ICommandRunner CreateMixAudioCommand(string input1, string input2, string output);
+        ICommand<MergeVideosModel> CreateMergeVideosCommand();
         ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand();
+        ICommand<ConvertAudioModel> CreateConvertAudioCommand();
+
+        ICommand<CreateThumbnailModel> CreateThumbnailCommand();
+        ICommand<CropModel> CreateCropCommand();
         ICommand<VideoCuttingModel> CreateVideoCuttingCommand();
+        
+        ICommand<RotationModel> CreateRotationCommand();
+        ICommand<GreenScreenModel> CreateGreenScreenCommand();
+        ICommandRunner CreateMixAudioCommand(string input1, string input2, string output);
         ICommand<ColorFilterModel> CreateColorFilterCommand();
         ICommand<VideoCompreesinModel> ChangeVideoCompressionCommand();
         ICommand<ChangeVolumeModel> CreateVolumeChangeCommand();
@@ -45,6 +48,7 @@ namespace FFmpeg.Infrastructure.Services
             _commandBuilder = new CommandBuilder(configuration);
         }
 
+
         public ICommand<CropModel> CreateCropCommand()
         {
             throw new NotImplementedException();
@@ -52,6 +56,14 @@ namespace FFmpeg.Infrastructure.Services
         public ICommand<WatermarkModel> CreateWatermarkCommand()
         {
             return new WatermarkCommand(_executor, _commandBuilder);
+        }
+        public ICommand<MergeVideosModel> CreateMergeVideosCommand()
+        {
+            return new MergeVideosCommand(_executor, _commandBuilder);
+        }
+        public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
+        {
+            return new ChangeSpeedCommand(_executor, _commandBuilder);
         }
         public ICommandRunner CreateMixAudioCommand(string input1, string input2, string output)
         {
@@ -69,15 +81,11 @@ namespace FFmpeg.Infrastructure.Services
         {
             return new CreateThumbnailCommand(_executor, _commandBuilder);
         }
-        public ICommand<ChangeSpeedModel> CreateVideoSpeedChangeCommand()
-        {
-            throw new NotImplementedException();
-        }
         public ICommand<ConvertAudioModel> CreateConvertAudioCommand()
         {
             return new ConvertAudioCommand(_executor, _commandBuilder);
         }
-        public ICommand<RotationModel> CreateRotationCommand()
+       public ICommand<RotationModel> CreateRotationCommand()
         {
             return new RotationCommand(_executor, _commandBuilder);
         }
